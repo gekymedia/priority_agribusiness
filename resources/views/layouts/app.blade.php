@@ -705,8 +705,8 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <i class="fas fa-seedling"></i>
+            <div class="sidebar-logo" style="background: transparent; box-shadow: none; padding: 0;">
+                <img src="{{ asset('mobile/priority_agriculture_192x192.png') }}" alt="{{ config('app.name') }} Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 12px;">
             </div>
             <div class="sidebar-brand">{{ config('app.name') }}</div>
         </div>
