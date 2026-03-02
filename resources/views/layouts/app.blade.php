@@ -712,7 +712,8 @@
         </div>
 
         @php
-            $user = auth()->user();
+            // Check employee guard first (for impersonation), then web guard
+            $user = Auth::guard('employee')->user() ?? Auth::guard('web')->user();
             $isAdmin = false;
             $isPoultryManager = false;
             $isCropManager = false;
@@ -869,22 +870,22 @@
             <div class="sidebar-user">
                 <div class="sidebar-user-avatar">
                     @php
-                        $user = auth()->user();
-                        $name = $user instanceof \App\Models\Employee ? $user->full_name : $user->name;
+                        $footerUser = Auth::guard('employee')->user() ?? Auth::guard('web')->user();
+                        $name = $footerUser instanceof \App\Models\Employee ? $footerUser->full_name : ($footerUser->name ?? 'User');
                         $roleLabels = [
                             'admin' => 'Admin',
                             'poultry_manager' => 'Poultry Farm Manager',
                             'crop_manager' => 'Crop Farms Manager',
                         ];
-                        $role = $user instanceof \App\Models\Employee 
-                            ? ($roleLabels[$user->access_level] ?? ucfirst($user->access_level))
-                            : ucfirst($user->role ?? 'Admin');
+                        $displayRole = $footerUser instanceof \App\Models\Employee 
+                            ? ($roleLabels[$footerUser->access_level] ?? ucfirst($footerUser->access_level ?? ''))
+                            : ($roleLabels[$footerUser->role] ?? ucfirst($footerUser->role ?? 'Admin'));
                     @endphp
                     {{ substr($name, 0, 1) }}
                 </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-user-name">{{ $name }}</div>
-                    <div class="sidebar-user-role">{{ $role }}</div>
+                    <div class="sidebar-user-role">{{ $displayRole }}</div>
                 </div>
                 <div class="dropdown">
                     <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown">
