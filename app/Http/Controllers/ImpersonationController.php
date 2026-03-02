@@ -32,6 +32,28 @@ class ImpersonationController extends Controller
         return redirect()->route('dashboard')->with('success', "You are now impersonating {$employee->full_name}.");
     }
 
+    public function startUser(Request $request, User $user)
+    {
+        $currentUser = auth()->user();
+        
+        if (!$this->canImpersonate($currentUser)) {
+            return redirect()->back()->with('error', 'You do not have permission to impersonate users.');
+        }
+
+        if ($user->id === $currentUser->id && $currentUser instanceof User) {
+            return redirect()->back()->with('error', 'You cannot impersonate yourself.');
+        }
+
+        Session::put('impersonator_id', $currentUser->id);
+        Session::put('impersonator_type', get_class($currentUser));
+        Session::put('impersonation_started_at', now());
+
+        Auth::guard('employee')->logout();
+        Auth::guard('web')->login($user);
+
+        return redirect()->route('dashboard')->with('success', "You are now impersonating {$user->name}.");
+    }
+
     public function stop(Request $request)
     {
         $impersonatorId = Session::get('impersonator_id');

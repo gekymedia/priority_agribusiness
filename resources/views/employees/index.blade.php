@@ -122,6 +122,12 @@
                             @endif
                         </td>
                         <td>
+                            @php
+                                $currentUser = auth()->user();
+                                $canImpersonate = ($currentUser instanceof \App\Models\User) || 
+                                                 ($currentUser instanceof \App\Models\Employee && $currentUser->isAdmin());
+                            @endphp
+                            
                             @if($record->record_type === 'employee')
                                 @if($record->status === 'pending')
                                     <form action="{{ route('employees.approve', $record) }}" method="POST" class="d-inline">
@@ -134,9 +140,6 @@
                                 @endif
                                 
                                 @php
-                                    $currentUser = auth()->user();
-                                    $canImpersonate = ($currentUser instanceof \App\Models\User) || 
-                                                     ($currentUser instanceof \App\Models\Employee && $currentUser->isAdmin());
                                     $isNotSelf = !($currentUser instanceof \App\Models\Employee && $currentUser->id === $record->id);
                                 @endphp
                                 
@@ -163,7 +166,32 @@
                                     </button>
                                 </form>
                             @else
-                                <span class="text-muted small">User accounts managed separately</span>
+                                @php
+                                    $isNotSelf = !($currentUser instanceof \App\Models\User && $currentUser->id === $record->id);
+                                @endphp
+                                
+                                @if($canImpersonate && $isNotSelf)
+                                    <form action="{{ route('impersonate.user', $record) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-dark" title="Impersonate this user">
+                                            <i class="fas fa-user-secret"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                                
+                                <a href="{{ route('users.show', $record) }}" class="btn btn-sm btn-info" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ route('users.edit', $record) }}" class="btn btn-sm btn-warning" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{{ route('users.destroy', $record) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
                             @endif
                         </td>
                     </tr>
