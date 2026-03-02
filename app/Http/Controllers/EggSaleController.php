@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\EggSale;
 use App\Models\BirdBatch;
 use App\Services\PriorityBankIntegrationService;
+use App\Services\CrudNotificationService;
 use Illuminate\Http\Request;
 
 class EggSaleController extends Controller
@@ -49,6 +50,8 @@ class EggSaleController extends Controller
             ]);
         }
 
+        app(CrudNotificationService::class)->notify('egg_sales', 'created', $eggSale, auth()->user());
+
         return redirect()->route('egg-sales.index')->with('success', 'Egg sale recorded successfully.');
     }
 
@@ -81,12 +84,18 @@ class EggSaleController extends Controller
 
         $eggSale->update($data);
 
+        app(CrudNotificationService::class)->notify('egg_sales', 'updated', $eggSale, auth()->user());
+
         return redirect()->route('egg-sales.index')->with('success', 'Egg sale updated successfully.');
     }
 
     public function destroy(EggSale $eggSale)
     {
+        $recordCopy = clone $eggSale;
         $eggSale->delete();
+
+        app(CrudNotificationService::class)->notify('egg_sales', 'deleted', $recordCopy, auth()->user());
+
         return redirect()->route('egg-sales.index')->with('success', 'Egg sale deleted successfully.');
     }
 }

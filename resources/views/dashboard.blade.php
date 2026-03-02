@@ -5,7 +5,11 @@
 @section('content')
 <div class="page-header">
     <h1 class="page-title">Dashboard</h1>
-    <p class="page-subtitle">Welcome back, {{ auth()->user()->name }}! Here's an overview of your agribusiness.</p>
+    @php
+        $user = auth()->user();
+        $userName = $user instanceof \App\Models\Employee ? $user->full_name : ($user->name ?? 'User');
+    @endphp
+    <p class="page-subtitle">Welcome back, {{ $userName }}! Here's an overview of your agribusiness.</p>
 </div>
 
 <!-- Stats Overview -->

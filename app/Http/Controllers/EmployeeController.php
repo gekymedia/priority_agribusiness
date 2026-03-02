@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Farm;
 use App\Models\House;
+use App\Models\User;
+use App\Services\CrudNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -12,24 +14,66 @@ use Illuminate\Support\Str;
 class EmployeeController extends Controller
 {
     /**
-     * Display a listing of employees.
+     * Display a listing of employees and users.
      */
     public function index(Request $request)
     {
-        $query = Employee::with(['farm', 'house'])->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")->orderBy('created_at', 'desc');
+        $typeFilter = $request->get('type_filter', 'all');
+        $statusFilter = $request->get('status_filter');
 
-        if ($request->filled('status_filter')) {
-            if ($request->status_filter === 'pending') {
-                $query->pending();
-            } elseif ($request->status_filter === 'approved') {
-                $query->approved();
+        $employees = collect();
+        $users = collect();
+
+        if ($typeFilter === 'all' || $typeFilter === 'employees') {
+            $empQuery = Employee::with(['farm', 'house'])
+                ->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+                ->orderBy('created_at', 'desc');
+
+            if ($statusFilter === 'pending') {
+                $empQuery->pending();
+            } elseif ($statusFilter === 'approved') {
+                $empQuery->approved();
             }
+
+            $employees = $empQuery->get()->map(function ($emp) {
+                $emp->record_type = 'employee';
+                $emp->display_name = $emp->full_name;
+                $emp->display_role = $emp->access_level;
+                return $emp;
+            });
         }
 
-        $employees = $query->paginate(15)->withQueryString();
-        $pendingCount = Employee::pending()->count();
+        if ($typeFilter === 'all' || $typeFilter === 'users') {
+            $users = User::orderBy('created_at', 'desc')->get()->map(function ($user) {
+                $user->record_type = 'user';
+                $user->display_name = $user->name;
+                $user->display_role = $user->role ?? 'user';
+                $user->status = 'approved';
+                $user->is_active = true;
+                return $user;
+            });
+        }
 
-        return view('employees.index', compact('employees', 'pendingCount'));
+        $combined = $employees->merge($users)->sortByDesc('created_at');
+        
+        $perPage = 15;
+        $page = $request->get('page', 1);
+        $total = $combined->count();
+        $items = $combined->forPage($page, $perPage)->values();
+        
+        $records = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $total,
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        $pendingCount = Employee::pending()->count();
+        $employeeCount = Employee::count();
+        $userCount = User::count();
+
+        return view('employees.index', compact('records', 'pendingCount', 'employeeCount', 'userCount', 'typeFilter', 'statusFilter'));
     }
 
     /**
@@ -68,7 +112,9 @@ class EmployeeController extends Controller
         $data['is_active'] = true;
         $data['status'] = 'pending';
 
-        Employee::create($data);
+        $employee = Employee::create($data);
+
+        app(CrudNotificationService::class)->notify('employees', 'created', $employee, auth()->user());
 
         return redirect()->route('employees.index')
             ->with('success', 'Employee created. They are pending approval and cannot log in until an admin approves them.');
@@ -143,6 +189,8 @@ class EmployeeController extends Controller
 
         $employee->update($data);
 
+        app(CrudNotificationService::class)->notify('employees', 'updated', $employee, auth()->user());
+
         return redirect()->route('employees.index')
             ->with('success', 'Employee updated successfully.');
     }
@@ -152,7 +200,10 @@ class EmployeeController extends Controller
      */
     public function destroy(Employee $employee)
     {
+        $employeeCopy = clone $employee;
         $employee->delete();
+
+        app(CrudNotificationService::class)->notify('employees', 'deleted', $employeeCopy, auth()->user());
 
         return redirect()->route('employees.index')
             ->with('success', 'Employee deleted successfully.');

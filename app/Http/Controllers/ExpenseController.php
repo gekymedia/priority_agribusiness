@@ -7,6 +7,7 @@ use App\Models\ExpenseCategory;
 use App\Models\Farm;
 use App\Models\BirdBatch;
 use App\Services\PriorityBankIntegrationService;
+use App\Services\CrudNotificationService;
 use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
@@ -51,6 +52,8 @@ class ExpenseController extends Controller
             ]);
         }
 
+        app(CrudNotificationService::class)->notify('expenses', 'created', $expense, auth()->user());
+
         return redirect()->route('expenses.index')->with('success', 'Expense recorded successfully.');
     }
 
@@ -82,12 +85,18 @@ class ExpenseController extends Controller
 
         $expense->update($data);
 
+        app(CrudNotificationService::class)->notify('expenses', 'updated', $expense, auth()->user());
+
         return redirect()->route('expenses.index')->with('success', 'Expense updated successfully.');
     }
 
     public function destroy(PoultryExpense $expense)
     {
+        $recordCopy = clone $expense;
         $expense->delete();
+
+        app(CrudNotificationService::class)->notify('expenses', 'deleted', $recordCopy, auth()->user());
+
         return redirect()->route('expenses.index')->with('success', 'Expense deleted successfully.');
     }
 }

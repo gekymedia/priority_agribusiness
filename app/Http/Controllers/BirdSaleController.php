@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BirdSale;
 use App\Models\BirdBatch;
 use App\Services\PriorityBankIntegrationService;
+use App\Services\CrudNotificationService;
 use Illuminate\Http\Request;
 
 class BirdSaleController extends Controller
@@ -46,6 +47,8 @@ class BirdSaleController extends Controller
             ]);
         }
 
+        app(CrudNotificationService::class)->notify('bird_sales', 'created', $birdSale, auth()->user());
+
         return redirect()->route('bird-sales.index')->with('success', 'Bird sale recorded successfully.');
     }
 
@@ -75,12 +78,18 @@ class BirdSaleController extends Controller
 
         $birdSale->update($data);
 
+        app(CrudNotificationService::class)->notify('bird_sales', 'updated', $birdSale, auth()->user());
+
         return redirect()->route('bird-sales.index')->with('success', 'Bird sale updated successfully.');
     }
 
     public function destroy(BirdSale $birdSale)
     {
+        $recordCopy = clone $birdSale;
         $birdSale->delete();
+
+        app(CrudNotificationService::class)->notify('bird_sales', 'deleted', $recordCopy, auth()->user());
+
         return redirect()->route('bird-sales.index')->with('success', 'Bird sale deleted successfully.');
     }
 }

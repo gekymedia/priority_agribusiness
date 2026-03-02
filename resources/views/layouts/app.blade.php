@@ -869,6 +869,34 @@
 
     <!-- Main Content -->
     <main class="main-container animate-in">
+        @if(\App\Http\Controllers\ImpersonationController::isImpersonating())
+            @php
+                $impersonator = \App\Http\Controllers\ImpersonationController::getImpersonator();
+                $impersonatorName = $impersonator instanceof \App\Models\User 
+                    ? $impersonator->name 
+                    : ($impersonator instanceof \App\Models\Employee ? $impersonator->full_name : 'Admin');
+                $currentUser = auth()->user();
+                $currentName = $currentUser instanceof \App\Models\Employee 
+                    ? $currentUser->full_name 
+                    : ($currentUser instanceof \App\Models\User ? $currentUser->name : 'User');
+            @endphp
+            <div class="impersonation-banner alert alert-warning d-flex align-items-center justify-content-between mb-4" role="alert" style="background: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%); border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-user-secret fa-2x me-3 text-dark"></i>
+                    <div>
+                        <strong class="text-dark">Impersonation Active</strong>
+                        <div class="small text-dark">You ({{ $impersonatorName }}) are viewing as <strong>{{ $currentName }}</strong></div>
+                    </div>
+                </div>
+                <form action="{{ route('impersonate.stop') }}" method="POST" class="mb-0">
+                    @csrf
+                    <button type="submit" class="btn btn-dark btn-sm">
+                        <i class="fas fa-sign-out-alt me-1"></i>Stop Impersonation
+                    </button>
+                </form>
+            </div>
+        @endif
+
         @if(session('success'))
             <div class="alert alert-modern alert-success alert-dismissible fade show mb-4" role="alert">
                 <i class="fas fa-check-circle me-2"></i>

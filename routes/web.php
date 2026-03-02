@@ -17,6 +17,7 @@ use App\Http\Controllers\MedicationCalendarController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 
@@ -45,8 +46,9 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [RegisterController::class, 'register']);
+// Public registration disabled - only admins can add users/employees
+// Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+// Route::post('/register', [RegisterController::class, 'register']);
 
 // Protected routes
 Route::middleware('auth.users')->group(function () {
@@ -89,6 +91,10 @@ Route::middleware('auth.users')->group(function () {
     Route::middleware('employee.access:manager')->group(function () {
         Route::resource('employees', EmployeeController::class);
         Route::patch('/employees/{employee}/approve', [EmployeeController::class, 'approve'])->name('employees.approve');
+        
+        // Impersonation (Admin only)
+        Route::post('/impersonate/{employee}', [ImpersonationController::class, 'start'])->name('impersonate.start');
+        Route::post('/impersonate/stop', [ImpersonationController::class, 'stop'])->name('impersonate.stop');
     });
 
     // Payroll (Admin/Manager only)
@@ -101,4 +107,5 @@ Route::middleware('auth.users')->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/test-notification', [SettingsController::class, 'testNotification'])->name('settings.test-notification');
     Route::post('/settings/clear-cache', [SettingsController::class, 'clearCache'])->name('settings.clear-cache');
+    Route::post('/settings/notification-settings', [SettingsController::class, 'updateNotificationSettings'])->name('settings.notification-settings');
 });

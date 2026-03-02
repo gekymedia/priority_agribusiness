@@ -3,13 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\NotificationSetting;
 use App\Services\Notifications\Notifier;
 
 class SettingsController extends Controller
 {
     public function index()
     {
-        return view('settings.index');
+        NotificationSetting::seedDefaults();
+        
+        $notificationSettings = NotificationSetting::all()->groupBy('module');
+        
+        return view('settings.index', compact('notificationSettings'));
     }
 
     public function testNotification(Request $request)
@@ -296,5 +301,27 @@ class SettingsController extends Controller
                 'message' => 'Failed to clear cache: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function updateNotificationSettings(Request $request)
+    {
+        $request->validate([
+            'module' => 'required|string',
+            'event' => 'required|string',
+            'enabled' => 'required|boolean',
+        ]);
+
+        $setting = NotificationSetting::updateOrCreate(
+            ['module' => $request->module, 'event' => $request->event],
+            ['enabled' => $request->enabled]
+        );
+
+        NotificationSetting::clearCache();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Notification setting updated successfully',
+            'setting' => $setting
+        ]);
     }
 }

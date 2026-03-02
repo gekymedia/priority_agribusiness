@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\EggProduction;
 use App\Models\BirdBatch;
+use App\Services\CrudNotificationService;
 use Illuminate\Http\Request;
 
 class EggProductionController extends Controller
@@ -33,7 +34,9 @@ class EggProductionController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        EggProduction::create($data);
+        $record = EggProduction::create($data);
+
+        app(CrudNotificationService::class)->notify('egg_production', 'created', $record, auth()->user());
 
         return redirect()->route('egg-productions.index')->with('success', 'Egg production record created successfully.');
     }
@@ -65,12 +68,18 @@ class EggProductionController extends Controller
 
         $eggProduction->update($data);
 
+        app(CrudNotificationService::class)->notify('egg_production', 'updated', $eggProduction, auth()->user());
+
         return redirect()->route('egg-productions.index')->with('success', 'Egg production record updated successfully.');
     }
 
     public function destroy(EggProduction $eggProduction)
     {
+        $recordCopy = clone $eggProduction;
         $eggProduction->delete();
+
+        app(CrudNotificationService::class)->notify('egg_production', 'deleted', $recordCopy, auth()->user());
+
         return redirect()->route('egg-productions.index')->with('success', 'Egg production record deleted successfully.');
     }
 }

@@ -167,6 +167,73 @@
                 </div>
             </div>
 
+            <!-- CRUD Notification Settings -->
+            <div class="agri-card mb-4">
+                <div class="agri-card-header" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(167, 139, 250, 0.9));">
+                    <h3><i class="fas fa-cog me-2"></i>CRUD Notification Settings</h3>
+                </div>
+                <div class="agri-card-body">
+                    <p class="text-muted mb-4">Control which CRUD events trigger notifications to system administrators.</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered notification-settings-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Module</th>
+                                    <th class="text-center">Created</th>
+                                    <th class="text-center">Updated</th>
+                                    <th class="text-center">Deleted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $modules = [
+                                        'egg_production' => 'Egg Production',
+                                        'egg_sales' => 'Egg Sales',
+                                        'bird_sales' => 'Bird Sales',
+                                        'expenses' => 'Expenses',
+                                        'employees' => 'Employees',
+                                    ];
+                                    $events = ['created', 'updated', 'deleted'];
+                                @endphp
+                                
+                                @foreach($modules as $moduleKey => $moduleLabel)
+                                <tr>
+                                    <td class="fw-bold">
+                                        <i class="fas fa-{{ $moduleKey === 'egg_production' ? 'egg' : ($moduleKey === 'egg_sales' ? 'shopping-cart' : ($moduleKey === 'bird_sales' ? 'dove' : ($moduleKey === 'expenses' ? 'receipt' : 'users'))) }} me-2 text-muted"></i>
+                                        {{ $moduleLabel }}
+                                    </td>
+                                    @foreach($events as $event)
+                                    @php
+                                        $setting = isset($notificationSettings[$moduleKey]) 
+                                            ? $notificationSettings[$moduleKey]->firstWhere('event', $event) 
+                                            : null;
+                                        $isEnabled = $setting ? $setting->enabled : true;
+                                    @endphp
+                                    <td class="text-center">
+                                        <div class="form-check form-switch d-inline-block">
+                                            <input class="form-check-input notification-toggle" 
+                                                   type="checkbox" 
+                                                   role="switch"
+                                                   data-module="{{ $moduleKey }}"
+                                                   data-event="{{ $event }}"
+                                                   {{ $isEnabled ? 'checked' : '' }}
+                                                   onchange="toggleNotificationSetting(this)">
+                                        </div>
+                                    </td>
+                                    @endforeach
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="form-text mt-2">
+                        <i class="fas fa-info-circle me-1"></i>
+                        When enabled, notifications are sent to all system administrators via configured channels (SMS, Email, GekyChat).
+                    </div>
+                </div>
+            </div>
+
             <!-- Cache Management -->
             <div class="agri-card">
                 <div class="agri-card-header" style="background: linear-gradient(135deg, rgba(244, 67, 54, 0.9), rgba(239, 83, 80, 0.9));">
@@ -373,6 +440,22 @@
         font-weight: 500;
         color: #374151;
     }
+    
+    .notification-settings-table .form-check-input {
+        width: 3em;
+        height: 1.5em;
+        cursor: pointer;
+    }
+    
+    .notification-settings-table .form-check-input:checked {
+        background-color: #10b981;
+        border-color: #10b981;
+    }
+    
+    .notification-toggle.updating {
+        opacity: 0.5;
+        pointer-events: none;
+    }
 </style>
 
 <script>
@@ -491,6 +574,42 @@
         })
         .catch(error => {
             alert('Failed to clear cache: ' + error.message);
+        });
+    }
+
+    function toggleNotificationSetting(checkbox) {
+        const module = checkbox.dataset.module;
+        const event = checkbox.dataset.event;
+        const enabled = checkbox.checked;
+        
+        checkbox.classList.add('updating');
+        
+        fetch('{{ route("settings.notification-settings") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                module: module,
+                event: event,
+                enabled: enabled
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                checkbox.checked = !enabled;
+                alert('Failed to update setting: ' + data.message);
+            }
+        })
+        .catch(error => {
+            checkbox.checked = !enabled;
+            alert('Failed to update setting: ' + error.message);
+        })
+        .finally(() => {
+            checkbox.classList.remove('updating');
         });
     }
 </script>
