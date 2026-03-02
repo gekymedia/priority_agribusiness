@@ -11,5 +11,6 @@ git push origin main
 
 Write-Host "Deploying to production..." -ForegroundColor Cyan
 # Using git pull instead of reset --hard to preserve local files like .env
-$remoteCmd = 'cd /home/gekymedia/web/agribusiness.prioritysolutionsagency.com/public_html && git fetch origin main && git checkout main && git pull origin main && composer install --no-dev --optimize-autoloader && php artisan migrate --force && php artisan view:clear && php artisan optimize:clear && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan optimize && php artisan queue:restart'
+# Caching disabled for easier development - views/routes/config are not cached
+$remoteCmd = 'cd /home/gekymedia/web/agribusiness.prioritysolutionsagency.com/public_html && git fetch origin main && git checkout main && git pull origin main && composer install --no-dev --optimize-autoloader && php artisan migrate --force && php artisan optimize:clear && php artisan queue:restart'
 ssh root@gekymedia.com $remoteCmd
