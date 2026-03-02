@@ -769,6 +769,12 @@
                 </a>
             </div>
             <div class="sidebar-menu-item">
+                <a href="{{ route('bird-mortality.index') }}" class="sidebar-link {{ request()->routeIs('bird-mortality.*') ? 'active' : '' }}">
+                    <i class="fas fa-skull-crossbones"></i>
+                    <span>Bird Mortality</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
                 <a href="{{ route('medication-calendars.index') }}" class="sidebar-link {{ request()->routeIs('medication-calendars.*') ? 'active' : '' }}">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Medication Calendars</span>

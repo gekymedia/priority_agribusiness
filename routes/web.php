@@ -22,6 +22,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\PayslipController;
+use App\Http\Controllers\BirdMortalityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,6 +72,7 @@ Route::middleware('auth.users')->group(function () {
     Route::resource('egg-productions', EggProductionController::class);
     Route::resource('egg-sales', EggSaleController::class);
     Route::resource('bird-sales', BirdSaleController::class);
+    Route::resource('bird-mortality', BirdMortalityController::class)->except(['show']);
 
     // Expenses
     Route::resource('expenses', ExpenseController::class);
