@@ -719,7 +719,10 @@
             $isEmployee = $user instanceof \App\Models\Employee;
             
             if ($user instanceof \App\Models\User) {
-                $isAdmin = true;
+                $role = $user->role ?? 'admin';
+                $isAdmin = $role === 'admin';
+                $isPoultryManager = $role === 'poultry_manager';
+                $isCropManager = $role === 'crop_manager';
             } elseif ($isEmployee && $user) {
                 $role = $user->access_level ?? '';
                 $isAdmin = $role === 'admin';
