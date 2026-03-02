@@ -68,18 +68,24 @@
             <div class="agri-card-body">
                 <h5 class="mb-4"><i class="fas fa-briefcase me-2"></i>Assignment & Access</h5>
                 <div class="row mb-3">
-                    <div class="col-md-4"><strong>Access Level:</strong></div>
+                    <div class="col-md-4"><strong>Role:</strong></div>
                     <div class="col-md-8">
                         @php
-                            $badgeColors = [
-                                'admin' => 'danger',
-                                'manager' => 'warning',
-                                'caretaker' => 'primary',
-                                'viewer' => 'secondary'
+                            $roleLabels = [
+                                'admin' => 'Admin',
+                                'poultry_manager' => 'Poultry Farm Manager',
+                                'crop_manager' => 'Crop Farms Manager',
                             ];
+                            $roleBadgeColors = [
+                                'admin' => 'danger',
+                                'poultry_manager' => 'warning',
+                                'crop_manager' => 'success',
+                            ];
+                            $roleLabel = $roleLabels[$employee->access_level] ?? ucfirst($employee->access_level);
+                            $badgeColor = $roleBadgeColors[$employee->access_level] ?? 'secondary';
                         @endphp
-                        <span class="badge bg-{{ $badgeColors[$employee->access_level] ?? 'secondary' }}">
-                            {{ ucfirst($employee->access_level) }}
+                        <span class="badge bg-{{ $badgeColor }}">
+                            {{ $roleLabel }}
                         </span>
                     </div>
                 </div>

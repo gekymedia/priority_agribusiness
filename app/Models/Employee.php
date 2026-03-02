@@ -89,8 +89,13 @@ class Employee extends Authenticatable
      */
     public function hasAccessLevel(string $level): bool
     {
-        $levels = ['viewer' => 1, 'caretaker' => 2, 'manager' => 3, 'admin' => 4];
-        return ($levels[$this->access_level] ?? 0) >= ($levels[$level] ?? 0);
+        if ($level === 'admin') {
+            return $this->access_level === 'admin';
+        }
+        if ($level === 'manager') {
+            return in_array($this->access_level, ['admin', 'poultry_manager', 'crop_manager']);
+        }
+        return true;
     }
 
     /**
@@ -99,6 +104,22 @@ class Employee extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->access_level === 'admin';
+    }
+
+    /**
+     * Check if employee is a poultry farm manager.
+     */
+    public function isPoultryManager(): bool
+    {
+        return $this->access_level === 'poultry_manager';
+    }
+
+    /**
+     * Check if employee is a crop farms manager.
+     */
+    public function isCropManager(): bool
+    {
+        return $this->access_level === 'crop_manager';
     }
 
     /**

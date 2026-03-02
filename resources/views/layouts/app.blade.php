@@ -711,6 +711,27 @@
             <div class="sidebar-brand">{{ config('app.name') }}</div>
         </div>
 
+        @php
+            $user = auth()->user();
+            $isAdmin = false;
+            $isPoultryManager = false;
+            $isCropManager = false;
+            $isEmployee = $user instanceof \App\Models\Employee;
+            
+            if ($user instanceof \App\Models\User) {
+                $isAdmin = true;
+            } elseif ($isEmployee && $user) {
+                $role = $user->access_level ?? '';
+                $isAdmin = $role === 'admin';
+                $isPoultryManager = $role === 'poultry_manager';
+                $isCropManager = $role === 'crop_manager';
+            }
+            
+            $showPoultry = $isAdmin || $isPoultryManager;
+            $showCrop = $isAdmin || $isCropManager;
+            $canManageEmployees = $isAdmin;
+        @endphp
+        
         <nav class="sidebar-menu">
             <div class="sidebar-menu-item">
                 <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -718,6 +739,8 @@
                     <span>Dashboard</span>
                 </a>
             </div>
+            
+            @if($showPoultry)
             <div class="sidebar-menu-item">
                 <a href="{{ route('egg-productions.index') }}" class="sidebar-link {{ request()->routeIs('egg-productions.*') ? 'active' : '' }}">
                     <i class="fas fa-egg"></i>
@@ -742,7 +765,16 @@
                     <span>Expenses</span>
                 </a>
             </div>
-            <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
+            <div class="sidebar-menu-item">
+                <a href="{{ route('medication-calendars.index') }}" class="sidebar-link {{ request()->routeIs('medication-calendars.*') ? 'active' : '' }}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Medication Calendars</span>
+                </a>
+            </div>
+            @endif
+            
+            @if($showCrop)
+            <div class="sidebar-menu-item" style="{{ $showPoultry ? 'margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);' : '' }}">
                 <a href="{{ route('fields.index') }}" class="sidebar-link {{ request()->routeIs('fields.*') ? 'active' : '' }}">
                     <i class="fas fa-border-all"></i>
                     <span>Fields</span>
@@ -760,31 +792,13 @@
                     <span>Tasks</span>
                 </a>
             </div>
-            <div class="sidebar-menu-item">
-                <a href="{{ route('medication-calendars.index') }}" class="sidebar-link {{ request()->routeIs('medication-calendars.*') ? 'active' : '' }}">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Medication Calendars</span>
-                </a>
-            </div>
-            @php
-                $user = auth()->user();
-                // Show Employees menu to:
-                // 1. Regular Users (they can be admins)
-                // 2. Employees with manager access or above
-                $canManageEmployees = false;
-                if ($user instanceof \App\Models\User) {
-                    // Regular users can see it - middleware will handle access
-                    $canManageEmployees = true;
-                } elseif ($user instanceof \App\Models\Employee) {
-                    // Employees need manager access or above
-                    $canManageEmployees = $user->isManager();
-                }
-            @endphp
+            @endif
+            
             @if($canManageEmployees)
-            <div class="sidebar-menu-item">
+            <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
                 <a href="{{ route('employees.index') }}" class="sidebar-link {{ request()->routeIs('employees.*') ? 'active' : '' }}">
                     <i class="fas fa-users"></i>
-                    <span>Employees</span>
+                    <span>Employees & Users</span>
                 </a>
             </div>
             <div class="sidebar-menu-item">
@@ -794,6 +808,17 @@
                 </a>
             </div>
             @endif
+            
+            @if($isEmployee)
+            <div class="sidebar-menu-item" style="{{ $canManageEmployees ? '' : 'margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);' }}">
+                <a href="{{ route('payslips.index') }}" class="sidebar-link {{ request()->routeIs('payslips.*') ? 'active' : '' }}">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>My Payslips</span>
+                </a>
+            </div>
+            @endif
+            
+            @if($isAdmin)
             <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
                 <a href="{{ route('farms.index') }}" class="sidebar-link {{ request()->routeIs('farms.*') ? 'active' : '' }}">
                     <i class="fas fa-tractor"></i>
@@ -812,18 +837,22 @@
                     <span>Bird Batches</span>
                 </a>
             </div>
+            @endif
+            
             <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
                 <a href="{{ route('profile.index') }}" class="sidebar-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
                     <i class="fas fa-user-cog"></i>
                     <span>Profile Settings</span>
                 </a>
             </div>
+            @if($isAdmin)
             <div class="sidebar-menu-item">
                 <a href="{{ route('settings.index') }}" class="sidebar-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
                     <i class="fas fa-cogs"></i>
                     <span>System Settings</span>
                 </a>
             </div>
+            @endif
         </nav>
 
         @auth
@@ -833,7 +862,14 @@
                     @php
                         $user = auth()->user();
                         $name = $user instanceof \App\Models\Employee ? $user->full_name : $user->name;
-                        $role = $user instanceof \App\Models\Employee ? ucfirst($user->access_level) : ucfirst($user->role ?? 'User');
+                        $roleLabels = [
+                            'admin' => 'Admin',
+                            'poultry_manager' => 'Poultry Farm Manager',
+                            'crop_manager' => 'Crop Farms Manager',
+                        ];
+                        $role = $user instanceof \App\Models\Employee 
+                            ? ($roleLabels[$user->access_level] ?? ucfirst($user->access_level))
+                            : ucfirst($user->role ?? 'Admin');
                     @endphp
                     {{ substr($name, 0, 1) }}
                 </div>

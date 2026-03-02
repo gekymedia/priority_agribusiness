@@ -49,8 +49,9 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Role <span class="text-danger">*</span></label>
                             <select name="role" class="form-control @error('role') is-invalid @enderror" required>
-                                <option value="user" {{ old('role', $user->role) === 'user' ? 'selected' : '' }}>User</option>
                                 <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="poultry_manager" {{ old('role', $user->role) === 'poultry_manager' ? 'selected' : '' }}>Poultry Farm Manager</option>
+                                <option value="crop_manager" {{ old('role', $user->role) === 'crop_manager' ? 'selected' : '' }}>Crop Farms Manager</option>
                             </select>
                             @error('role')
                                 <div class="invalid-feedback">{{ $message }}</div>

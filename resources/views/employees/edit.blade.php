@@ -75,12 +75,11 @@
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Access Level <span class="text-danger">*</span></label>
+                    <label class="form-label">Role <span class="text-danger">*</span></label>
                     <select name="access_level" class="form-select" required>
-                        <option value="viewer" {{ old('access_level', $employee->access_level) == 'viewer' ? 'selected' : '' }}>Viewer (Read-only)</option>
-                        <option value="caretaker" {{ old('access_level', $employee->access_level) == 'caretaker' ? 'selected' : '' }}>Caretaker (Can edit tasks)</option>
-                        <option value="manager" {{ old('access_level', $employee->access_level) == 'manager' ? 'selected' : '' }}>Manager (Full access)</option>
-                        <option value="admin" {{ old('access_level', $employee->access_level) == 'admin' ? 'selected' : '' }}>Admin (Full system access)</option>
+                        <option value="admin" {{ old('access_level', $employee->access_level) == 'admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="poultry_manager" {{ old('access_level', $employee->access_level) == 'poultry_manager' ? 'selected' : '' }}>Poultry Farm Manager</option>
+                        <option value="crop_manager" {{ old('access_level', $employee->access_level) == 'crop_manager' ? 'selected' : '' }}>Crop Farms Manager</option>
                     </select>
                     @error('access_level')
                         <div class="text-danger small">{{ $message }}</div>

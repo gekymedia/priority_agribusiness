@@ -21,6 +21,7 @@ use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\PayslipController;
 
 /*
 |--------------------------------------------------------------------------
@@ -110,6 +111,10 @@ Route::middleware('auth.users')->group(function () {
         Route::resource('payroll', PayrollController::class);
         Route::post('/payroll/{payroll}/status', [PayrollController::class, 'updateStatus'])->name('payroll.status');
     });
+
+    // Payslips (for employees to view their own payslips)
+    Route::get('/payslips', [PayslipController::class, 'index'])->name('payslips.index');
+    Route::get('/payslips/{payroll}', [PayslipController::class, 'show'])->name('payslips.show');
 
     // Settings (Admin only)
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');

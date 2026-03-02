@@ -95,16 +95,14 @@
                         <td>{{ $record->phone ?? 'N/A' }}</td>
                         <td>
                             @php
-                                $badgeColors = [
-                                    'admin' => 'danger',
-                                    'manager' => 'warning',
-                                    'caretaker' => 'primary',
-                                    'viewer' => 'secondary',
-                                    'user' => 'info'
+                                $roleBadgeColors = [
+                                    'Admin' => 'danger',
+                                    'Poultry Farm Manager' => 'warning',
+                                    'Crop Farms Manager' => 'success',
                                 ];
                             @endphp
-                            <span class="badge bg-{{ $badgeColors[$record->display_role] ?? 'secondary' }}">
-                                {{ ucfirst($record->display_role) }}
+                            <span class="badge bg-{{ $roleBadgeColors[$record->display_role] ?? 'secondary' }}">
+                                {{ $record->display_role }}
                             </span>
                         </td>
                         <td>

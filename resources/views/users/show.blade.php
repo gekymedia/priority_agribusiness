@@ -34,8 +34,22 @@
                 <div class="row mb-3">
                     <div class="col-md-4 text-muted">Role</div>
                     <div class="col-md-8">
-                        <span class="badge bg-{{ $user->role === 'admin' ? 'danger' : 'info' }}">
-                            {{ ucfirst($user->role ?? 'user') }}
+                        @php
+                            $roleLabels = [
+                                'admin' => 'Admin',
+                                'poultry_manager' => 'Poultry Farm Manager',
+                                'crop_manager' => 'Crop Farms Manager',
+                            ];
+                            $roleBadgeColors = [
+                                'admin' => 'danger',
+                                'poultry_manager' => 'warning',
+                                'crop_manager' => 'success',
+                            ];
+                            $roleLabel = $roleLabels[$user->role] ?? ucfirst($user->role ?? 'Admin');
+                            $badgeColor = $roleBadgeColors[$user->role] ?? 'secondary';
+                        @endphp
+                        <span class="badge bg-{{ $badgeColor }}">
+                            {{ $roleLabel }}
                         </span>
                     </div>
                 </div>

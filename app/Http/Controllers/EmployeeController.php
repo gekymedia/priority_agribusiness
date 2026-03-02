@@ -35,19 +35,31 @@ class EmployeeController extends Controller
                 $empQuery->approved();
             }
 
-            $employees = $empQuery->get()->map(function ($emp) {
+            $roleLabels = [
+                'admin' => 'Admin',
+                'poultry_manager' => 'Poultry Farm Manager',
+                'crop_manager' => 'Crop Farms Manager',
+            ];
+            
+            $employees = $empQuery->get()->map(function ($emp) use ($roleLabels) {
                 $emp->record_type = 'employee';
                 $emp->display_name = $emp->full_name;
-                $emp->display_role = $emp->access_level;
+                $emp->display_role = $roleLabels[$emp->access_level] ?? ucfirst($emp->access_level);
                 return $emp;
             });
         }
 
         if ($typeFilter === 'all' || $typeFilter === 'users') {
-            $users = User::orderBy('created_at', 'desc')->get()->map(function ($user) {
+            $roleLabels = [
+                'admin' => 'Admin',
+                'poultry_manager' => 'Poultry Farm Manager',
+                'crop_manager' => 'Crop Farms Manager',
+            ];
+            
+            $users = User::orderBy('created_at', 'desc')->get()->map(function ($user) use ($roleLabels) {
                 $user->record_type = 'user';
                 $user->display_name = $user->name;
-                $user->display_role = $user->role ?? 'user';
+                $user->display_role = $roleLabels[$user->role] ?? ucfirst($user->role ?? 'Admin');
                 $user->status = 'approved';
                 $user->is_active = true;
                 return $user;
@@ -97,7 +109,7 @@ class EmployeeController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:employees,email',
             'phone' => 'nullable|string|max:20',
-            'access_level' => 'required|in:admin,manager,caretaker,viewer',
+            'access_level' => 'required|in:admin,poultry_manager,crop_manager',
             'farm_id' => 'nullable|exists:farms,id',
             'house_id' => 'nullable|exists:houses,id',
             'hire_date' => 'nullable|date',
@@ -151,7 +163,7 @@ class EmployeeController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:employees,email,' . $employee->id,
             'phone' => 'nullable|string|max:20',
-            'access_level' => 'required|in:admin,manager,caretaker,viewer',
+            'access_level' => 'required|in:admin,poultry_manager,crop_manager',
             'farm_id' => 'nullable|exists:farms,id',
             'house_id' => 'nullable|exists:houses,id',
             'hire_date' => 'nullable|date',
