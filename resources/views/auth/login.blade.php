@@ -36,8 +36,5 @@
             <i class="fas fa-sign-in-alt me-2"></i>Login
         </button>
     </div>
-    <div class="text-center">
-        <p class="mb-0">Don't have an account? <a href="{{ route('register') }}" class="auth-link">Register here</a></p>
-    </div>
 </form>
 @endsection
