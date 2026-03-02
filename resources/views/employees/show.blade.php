@@ -8,13 +8,22 @@
     <p class="page-subtitle">Employee Information and Details</p>
 </div>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
         <a href="{{ route('employees.index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left me-2"></i>Back to Employees
         </a>
     </div>
-    <div>
+    <div class="d-flex gap-2">
+        @if($employee->status === 'pending')
+        <form action="{{ route('employees.approve', $employee) }}" method="POST" class="d-inline">
+            @csrf
+            @method('PATCH')
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-check me-2"></i>Approve Employee
+            </button>
+        </form>
+        @endif
         <a href="{{ route('employees.edit', $employee) }}" class="btn btn-warning">
             <i class="fas fa-edit me-2"></i>Edit
         </a>
@@ -75,7 +84,17 @@
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <div class="col-md-4"><strong>Status:</strong></div>
+                    <div class="col-md-4"><strong>Approval:</strong></div>
+                    <div class="col-md-8">
+                        @if($employee->status === 'approved')
+                            <span class="badge bg-success">Approved</span> (can log in)
+                        @else
+                            <span class="badge bg-warning text-dark">Pending</span> (cannot log in until approved)
+                        @endif
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4"><strong>Active:</strong></div>
                     <div class="col-md-8">
                         @if($employee->is_active)
                             <span class="badge bg-success">Active</span>

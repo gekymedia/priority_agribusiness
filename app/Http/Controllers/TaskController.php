@@ -28,7 +28,7 @@ class TaskController extends Controller
         }
         
         $tasks = $query->orderBy('due_date')->paginate(15);
-        $employees = \App\Models\Employee::where('is_active', true)->orderBy('first_name')->get();
+        $employees = \App\Models\Employee::approved()->where('is_active', true)->orderBy('first_name')->get();
         
         return view('tasks.index', compact('tasks', 'employees'));
     }
@@ -38,7 +38,7 @@ class TaskController extends Controller
      */
     public function create()
     {
-        $employees = \App\Models\Employee::where('is_active', true)
+        $employees = \App\Models\Employee::approved()->where('is_active', true)
             ->orderBy('first_name')
             ->get();
         return view('tasks.create', compact('employees'));
@@ -76,7 +76,7 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        $employees = \App\Models\Employee::where('is_active', true)
+        $employees = \App\Models\Employee::approved()->where('is_active', true)
             ->orderBy('first_name')
             ->get();
         return view('tasks.edit', compact('task', 'employees'));

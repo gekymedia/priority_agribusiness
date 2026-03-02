@@ -504,7 +504,7 @@
                     <div class="auth-card animate-in">
                         <div class="auth-header">
                             <div class="auth-logo animate-float" style="background: transparent; box-shadow: none;">
-                                <img src="{{ asset('mobile/priority_agriculture_192x192.png') }}" alt="{{ config('app.name') }} Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 20px;">
+                                <img src="{{ asset('mobile/priority_agriculture_192x192.png') }}" alt="Priority Agribusiness Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 20px;">
                             </div>
                             <h1 class="auth-title">{{ config('app.name') }}</h1>
                             <p class="auth-subtitle">

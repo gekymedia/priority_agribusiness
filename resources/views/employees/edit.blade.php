@@ -22,10 +22,17 @@
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Status</label>
+                    <label class="form-label">Active</label>
                     <select name="is_active" class="form-select">
                         <option value="1" {{ old('is_active', $employee->is_active) ? 'selected' : '' }}>Active</option>
                         <option value="0" {{ !old('is_active', $employee->is_active) ? 'selected' : '' }}>Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Approval</label>
+                    <select name="status" class="form-select">
+                        <option value="pending" {{ old('status', $employee->status) === 'pending' ? 'selected' : '' }}>Pending (cannot log in)</option>
+                        <option value="approved" {{ old('status', $employee->status) === 'approved' ? 'selected' : '' }}>Approved (can log in)</option>
                     </select>
                 </div>
             </div>
@@ -139,7 +146,101 @@
                 @enderror
             </div>
 
-            <div class="row">
+            <!-- Salary & Payroll Section -->
+            <div class="border-top pt-4 mt-4">
+                <h5 class="mb-3"><i class="fas fa-money-bill-wave me-2 text-success"></i>Salary & Payroll Information</h5>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Base Salary (GHS)</label>
+                        <input type="number" step="0.01" min="0" name="base_salary" value="{{ old('base_salary', $employee->base_salary ?? 0) }}" class="form-control">
+                        @error('base_salary')
+                            <div class="text-danger small">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Allowances</label>
+                    <div id="allowances-container">
+                        @php
+                            $allowances = old('allowances', $employee->allowances ?? []);
+                            if (!is_array($allowances)) $allowances = [];
+                        @endphp
+                        @forelse($allowances as $name => $amount)
+                            <div class="row mb-2 allowance-row">
+                                <div class="col-5">
+                                    <input type="text" name="allowance_names[]" value="{{ $name }}" class="form-control" placeholder="Allowance name">
+                                </div>
+                                <div class="col-5">
+                                    <input type="number" step="0.01" min="0" name="allowance_amounts[]" value="{{ $amount }}" class="form-control" placeholder="Amount">
+                                </div>
+                                <div class="col-2">
+                                    <button type="button" class="btn btn-outline-danger btn-remove-allowance"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="row mb-2 allowance-row">
+                                <div class="col-5">
+                                    <input type="text" name="allowance_names[]" class="form-control" placeholder="Allowance name">
+                                </div>
+                                <div class="col-5">
+                                    <input type="number" step="0.01" min="0" name="allowance_amounts[]" class="form-control" placeholder="Amount">
+                                </div>
+                                <div class="col-2">
+                                    <button type="button" class="btn btn-outline-danger btn-remove-allowance"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        @endforelse
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="btn-add-allowance">
+                        <i class="fas fa-plus me-1"></i>Add Allowance
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bank Details Section -->
+            <div class="border-top pt-4 mt-4">
+                <h5 class="mb-3"><i class="fas fa-university me-2 text-primary"></i>Bank Details</h5>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Bank Name</label>
+                        <input type="text" name="bank_name" value="{{ old('bank_name', $employee->bank_name) }}" class="form-control">
+                        @error('bank_name')
+                            <div class="text-danger small">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Account Name</label>
+                        <input type="text" name="bank_account_name" value="{{ old('bank_account_name', $employee->bank_account_name) }}" class="form-control">
+                        @error('bank_account_name')
+                            <div class="text-danger small">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Account Number</label>
+                        <input type="text" name="bank_account_number" value="{{ old('bank_account_number', $employee->bank_account_number) }}" class="form-control">
+                        @error('bank_account_number')
+                            <div class="text-danger small">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Branch</label>
+                        <input type="text" name="bank_branch" value="{{ old('bank_branch', $employee->bank_branch) }}" class="form-control">
+                        @error('bank_branch')
+                            <div class="text-danger small">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">New Password</label>
                     <input type="password" name="password" class="form-control">
@@ -186,6 +287,37 @@
                 }
             }
         });
+    });
+
+    // Add allowance row
+    document.getElementById('btn-add-allowance').addEventListener('click', function() {
+        const container = document.getElementById('allowances-container');
+        const row = document.createElement('div');
+        row.className = 'row mb-2 allowance-row';
+        row.innerHTML = `
+            <div class="col-5">
+                <input type="text" name="allowance_names[]" class="form-control" placeholder="Allowance name">
+            </div>
+            <div class="col-5">
+                <input type="number" step="0.01" min="0" name="allowance_amounts[]" class="form-control" placeholder="Amount">
+            </div>
+            <div class="col-2">
+                <button type="button" class="btn btn-outline-danger btn-remove-allowance"><i class="fas fa-times"></i></button>
+            </div>
+        `;
+        container.appendChild(row);
+    });
+
+    // Remove allowance row
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-remove-allowance')) {
+            const row = e.target.closest('.allowance-row');
+            if (document.querySelectorAll('.allowance-row').length > 1) {
+                row.remove();
+            } else {
+                row.querySelectorAll('input').forEach(input => input.value = '');
+            }
+        }
     });
 </script>
 @endsection

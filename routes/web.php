@@ -15,6 +15,8 @@ use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\MedicationCalendarController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 
@@ -86,5 +88,17 @@ Route::middleware('auth.users')->group(function () {
     // Employees (Admin/Manager only)
     Route::middleware('employee.access:manager')->group(function () {
         Route::resource('employees', EmployeeController::class);
+        Route::patch('/employees/{employee}/approve', [EmployeeController::class, 'approve'])->name('employees.approve');
     });
+
+    // Payroll (Admin/Manager only)
+    Route::middleware('employee.access:manager')->group(function () {
+        Route::resource('payroll', PayrollController::class);
+        Route::post('/payroll/{payroll}/status', [PayrollController::class, 'updateStatus'])->name('payroll.status');
+    });
+
+    // Settings (Admin only)
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::post('/settings/test-notification', [SettingsController::class, 'testNotification'])->name('settings.test-notification');
+    Route::post('/settings/clear-cache', [SettingsController::class, 'clearCache'])->name('settings.clear-cache');
 });

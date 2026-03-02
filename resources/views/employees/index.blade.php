@@ -8,11 +8,30 @@
     <p class="page-subtitle">Manage farm employees and their access levels</p>
 </div>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
+@if($pendingCount > 0)
+<div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+    <i class="fas fa-user-clock fa-2x me-3"></i>
+    <div class="flex-grow-1">
+        <strong>{{ $pendingCount }}</strong> employee(s) pending approval. They cannot log in until you approve them.
+    </div>
+    <a href="{{ route('employees.index', ['status_filter' => 'pending']) }}" class="btn btn-warning btn-sm">View pending</a>
+</div>
+@endif
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div class="d-flex gap-2">
         <a href="{{ route('employees.create') }}" class="btn btn-agri">
             <i class="fas fa-plus me-2"></i>Add Employee
         </a>
+        <a href="{{ route('employees.index', ['status_filter' => 'pending']) }}" class="btn btn-outline-warning {{ request('status_filter') === 'pending' ? 'active' : '' }}">
+            <i class="fas fa-user-clock me-2"></i>Pending
+        </a>
+        <a href="{{ route('employees.index', ['status_filter' => 'approved']) }}" class="btn btn-outline-success {{ request('status_filter') === 'approved' ? 'active' : '' }}">
+            <i class="fas fa-user-check me-2"></i>Approved
+        </a>
+        @if(request('status_filter'))
+        <a href="{{ route('employees.index') }}" class="btn btn-outline-secondary">All</a>
+        @endif
     </div>
 </div>
 
@@ -28,7 +47,8 @@
                         <th>Phone</th>
                         <th>Access Level</th>
                         <th>Farm/House</th>
-                        <th>Status</th>
+                        <th>Approval</th>
+                        <th>Active</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -62,6 +82,13 @@
                             @endif
                         </td>
                         <td>
+                            @if($employee->status === 'approved')
+                                <span class="badge bg-success">Approved</span>
+                            @else
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            @endif
+                        </td>
+                        <td>
                             @if($employee->is_active)
                                 <span class="badge bg-success">Active</span>
                             @else
@@ -69,6 +96,15 @@
                             @endif
                         </td>
                         <td>
+                            @if($employee->status === 'pending')
+                                <form action="{{ route('employees.approve', $employee) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-success" title="Approve employee">
+                                        <i class="fas fa-check me-1"></i>Approve
+                                    </button>
+                                </form>
+                            @endif
                             <a href="{{ route('employees.show', $employee) }}" class="btn btn-sm btn-info">
                                 <i class="fas fa-eye"></i>
                             </a>
@@ -86,7 +122,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center py-5">
+                        <td colspan="9" class="text-center py-5">
                             <i class="fas fa-users fa-3x text-muted mb-3"></i>
                             <p class="text-muted">No employees registered yet</p>
                             <a href="{{ route('employees.create') }}" class="btn btn-agri">

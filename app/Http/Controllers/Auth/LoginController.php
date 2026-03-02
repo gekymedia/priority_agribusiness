@@ -36,7 +36,15 @@ class LoginController extends Controller
         // Try to authenticate as Employee
         if (Auth::guard('employee')->attempt($credentials, $request->boolean('remember'))) {
             $employee = Auth::guard('employee')->user();
-            
+
+            // Check if employee has been approved by admin
+            if (!$employee->isApproved()) {
+                Auth::guard('employee')->logout();
+                throw ValidationException::withMessages([
+                    'email' => 'Your account is pending approval. Please wait for an administrator to approve your access.',
+                ]);
+            }
+
             // Check if employee is active
             if (!$employee->is_active) {
                 Auth::guard('employee')->logout();
@@ -44,7 +52,7 @@ class LoginController extends Controller
                     'email' => 'Your account has been deactivated. Please contact your administrator.',
                 ]);
             }
-            
+
             $request->session()->regenerate();
             return redirect()->intended('/');
         }

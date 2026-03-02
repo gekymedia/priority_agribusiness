@@ -26,14 +26,18 @@ class CheckEmployeeAccess
             return $next($request);
         }
         
-        // If user is an Employee, check their access level
+        // If user is an Employee, check approval and access level
         if ($user instanceof \App\Models\Employee) {
+            if (!$user->isApproved()) {
+                Auth::logout();
+                return redirect()->route('login')
+                    ->with('error', 'Your account is pending approval.');
+            }
             if (!$user->is_active) {
                 Auth::logout();
                 return redirect()->route('login')
                     ->with('error', 'Your account has been deactivated.');
             }
-            
             if ($user->hasAccessLevel($requiredLevel)) {
                 return $next($request);
             }

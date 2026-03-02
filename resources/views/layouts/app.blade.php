@@ -706,7 +706,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo" style="background: transparent; box-shadow: none; padding: 0;">
-                <img src="{{ asset('mobile/priority_agriculture_192x192.png') }}" alt="{{ config('app.name') }} Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 12px;">
+                <img src="{{ asset('mobile/priority_agriculture_192x192.png') }}" alt="Priority Agribusiness Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 12px;">
             </div>
             <div class="sidebar-brand">{{ config('app.name') }}</div>
         </div>
@@ -719,24 +719,30 @@
                 </a>
             </div>
             <div class="sidebar-menu-item">
-                <a href="{{ route('farms.index') }}" class="sidebar-link {{ request()->routeIs('farms.*') ? 'active' : '' }}">
-                    <i class="fas fa-tractor"></i>
-                    <span>Farms</span>
+                <a href="{{ route('egg-productions.index') }}" class="sidebar-link {{ request()->routeIs('egg-productions.*') ? 'active' : '' }}">
+                    <i class="fas fa-egg"></i>
+                    <span>Egg Production</span>
                 </a>
             </div>
             <div class="sidebar-menu-item">
-                <a href="{{ route('houses.index') }}" class="sidebar-link {{ request()->routeIs('houses.*') ? 'active' : '' }}">
-                    <i class="fas fa-home"></i>
-                    <span>Houses</span>
+                <a href="{{ route('egg-sales.index') }}" class="sidebar-link {{ request()->routeIs('egg-sales.*') ? 'active' : '' }}">
+                    <i class="fas fa-shopping-basket"></i>
+                    <span>Egg Sales</span>
                 </a>
             </div>
             <div class="sidebar-menu-item">
-                <a href="{{ route('batches.index') }}" class="sidebar-link {{ request()->routeIs('batches.*') ? 'active' : '' }}">
-                    <i class="fas fa-dove"></i>
-                    <span>Bird Batches</span>
+                <a href="{{ route('bird-sales.index') }}" class="sidebar-link {{ request()->routeIs('bird-sales.*') ? 'active' : '' }}">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    <span>Bird Sales</span>
                 </a>
             </div>
             <div class="sidebar-menu-item">
+                <a href="{{ route('expenses.index') }}" class="sidebar-link {{ request()->routeIs('expenses.*') ? 'active' : '' }}">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Expenses</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
                 <a href="{{ route('fields.index') }}" class="sidebar-link {{ request()->routeIs('fields.*') ? 'active' : '' }}">
                     <i class="fas fa-border-all"></i>
                     <span>Fields</span>
@@ -781,35 +787,41 @@
                     <span>Employees</span>
                 </a>
             </div>
+            <div class="sidebar-menu-item">
+                <a href="{{ route('payroll.index') }}" class="sidebar-link {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
+                    <i class="fas fa-money-check-alt"></i>
+                    <span>Payroll</span>
+                </a>
+            </div>
             @endif
             <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
-                <a href="{{ route('egg-productions.index') }}" class="sidebar-link {{ request()->routeIs('egg-productions.*') ? 'active' : '' }}">
-                    <i class="fas fa-egg"></i>
-                    <span>Egg Production</span>
+                <a href="{{ route('farms.index') }}" class="sidebar-link {{ request()->routeIs('farms.*') ? 'active' : '' }}">
+                    <i class="fas fa-tractor"></i>
+                    <span>Farms</span>
                 </a>
             </div>
             <div class="sidebar-menu-item">
-                <a href="{{ route('egg-sales.index') }}" class="sidebar-link {{ request()->routeIs('egg-sales.*') ? 'active' : '' }}">
-                    <i class="fas fa-shopping-basket"></i>
-                    <span>Egg Sales</span>
+                <a href="{{ route('houses.index') }}" class="sidebar-link {{ request()->routeIs('houses.*') ? 'active' : '' }}">
+                    <i class="fas fa-home"></i>
+                    <span>Houses</span>
                 </a>
             </div>
             <div class="sidebar-menu-item">
-                <a href="{{ route('bird-sales.index') }}" class="sidebar-link {{ request()->routeIs('bird-sales.*') ? 'active' : '' }}">
-                    <i class="fas fa-hand-holding-usd"></i>
-                    <span>Bird Sales</span>
-                </a>
-            </div>
-            <div class="sidebar-menu-item">
-                <a href="{{ route('expenses.index') }}" class="sidebar-link {{ request()->routeIs('expenses.*') ? 'active' : '' }}">
-                    <i class="fas fa-money-bill-wave"></i>
-                    <span>Expenses</span>
+                <a href="{{ route('batches.index') }}" class="sidebar-link {{ request()->routeIs('batches.*') ? 'active' : '' }}">
+                    <i class="fas fa-dove"></i>
+                    <span>Bird Batches</span>
                 </a>
             </div>
             <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
                 <a href="{{ route('profile.index') }}" class="sidebar-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
                     <i class="fas fa-user-cog"></i>
                     <span>Profile Settings</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="{{ route('settings.index') }}" class="sidebar-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                    <i class="fas fa-cogs"></i>
+                    <span>System Settings</span>
                 </a>
             </div>
         </nav>

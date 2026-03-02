@@ -28,7 +28,15 @@ class Employee extends Authenticatable
         'address',
         'notes',
         'is_active',
+        'status',
         'password',
+        'base_salary',
+        'allowances',
+        'bank_name',
+        'bank_account_name',
+        'bank_account_number',
+        'bank_branch',
+        'bank_swift_or_sort',
     ];
 
     protected $hidden = [
@@ -40,6 +48,8 @@ class Employee extends Authenticatable
         'hire_date' => 'date',
         'is_active' => 'boolean',
         'email_verified_at' => 'datetime',
+        'allowances' => 'array',
+        'base_salary' => 'decimal:2',
     ];
 
     /**
@@ -92,6 +102,30 @@ class Employee extends Authenticatable
     }
 
     /**
+     * Check if employee has been approved by admin (can log in and use the system).
+     */
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+
+    /**
+     * Scope to only approved employees.
+     */
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
+    /**
+     * Scope to only pending employees.
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    /**
      * Check if employee is manager or above.
      */
     public function isManager(): bool
@@ -113,5 +147,22 @@ class Employee extends Authenticatable
     public function tasks()
     {
         return $this->hasMany(Task::class, 'assigned_to');
+    }
+
+    /**
+     * Get payrolls for this employee.
+     */
+    public function payrolls()
+    {
+        return $this->hasMany(Payroll::class);
+    }
+
+    /**
+     * Calculate total allowances from the allowances array.
+     */
+    public function currentAllowancesTotal(): float
+    {
+        $allowances = $this->allowances ?? [];
+        return array_sum(array_map('floatval', $allowances));
     }
 }
