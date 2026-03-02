@@ -91,6 +91,9 @@ Route::middleware('auth.users')->group(function () {
     Route::get('/batches/{batch}/medication-schedule', [MedicationCalendarController::class, 'viewSchedule'])->name('batches.medication-schedule');
     Route::post('/medication-schedules/{schedule}/complete', [MedicationCalendarController::class, 'completeSchedule'])->name('medication-schedules.complete');
 
+    // Stop impersonation (available to anyone who is impersonating)
+    Route::post('/impersonate/stop', [ImpersonationController::class, 'stop'])->name('impersonate.stop');
+
     // Employees (Admin/Manager only)
     Route::middleware('employee.access:manager')->group(function () {
         Route::resource('employees', EmployeeController::class);
@@ -102,10 +105,9 @@ Route::middleware('auth.users')->group(function () {
         Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
         
-        // Impersonation (Admin only)
+        // Impersonation start (Admin only)
         Route::post('/impersonate/{employee}', [ImpersonationController::class, 'start'])->name('impersonate.start');
         Route::post('/impersonate/user/{user}', [ImpersonationController::class, 'startUser'])->name('impersonate.user');
-        Route::post('/impersonate/stop', [ImpersonationController::class, 'stop'])->name('impersonate.stop');
     });
 
     // Payroll (Admin/Manager only)
