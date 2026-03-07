@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name') }} - @yield('title', 'Welcome')</title>
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <meta name="theme-color" content="#2e7d32">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    
     <!-- Favicons -->
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon/priority_agriculture_16x16.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon/priority_agriculture_32x32.png') }}">

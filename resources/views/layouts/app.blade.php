@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name') }} - @yield('title', 'Dashboard')</title>
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <meta name="theme-color" content="#2e7d32">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    
     <!-- Favicons -->
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon/priority_agriculture_16x16.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon/priority_agriculture_32x32.png') }}">
@@ -1058,21 +1052,6 @@
                 }
             });
         });
-    </script>
-
-    <!-- Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful');
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
     </script>
 </body>
 </html>
