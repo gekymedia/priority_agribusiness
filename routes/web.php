@@ -87,6 +87,7 @@ Route::middleware('auth.users')->group(function () {
     Route::post('egg-productions/bulk-import', [EggProductionController::class, 'processBulkImport'])->name('egg-productions.bulk-import.process');
     Route::resource('egg-productions', EggProductionController::class);
     Route::resource('egg-sales', EggSaleController::class);
+    Route::post('egg-sales/online-orders/{market_order}/complete', [EggSaleController::class, 'markOrderComplete'])->name('egg-sales.online-orders.complete');
     Route::resource('bird-sales', BirdSaleController::class);
     Route::resource('bird-mortality', BirdMortalityController::class)->except(['show']);
 

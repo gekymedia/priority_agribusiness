@@ -11,6 +11,7 @@ class EggSale extends Model
     use HasFactory;
 
     protected $fillable = [
+        'market_order_id',
         'bird_batch_id',
         'date',
         'quantity_sold',
@@ -28,5 +29,10 @@ class EggSale extends Model
     public function birdBatch(): BelongsTo
     {
         return $this->belongsTo(BirdBatch::class);
+    }
+
+    public function marketOrder(): BelongsTo
+    {
+        return $this->belongsTo(MarketOrder::class);
     }
 }

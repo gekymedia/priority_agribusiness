@@ -210,7 +210,7 @@ class EggStoreController extends Controller
             return redirect()->route('store.index')->with('error', 'Order not found or already processed.');
         }
         $order->update(['status' => MarketOrder::STATUS_PAID]);
-        $this->recordEggSalesForOrder($order);
+        // Egg sales are created only when staff marks the order as "Complete" in Egg Sales > Online Store Sales.
 
         return redirect()->route('store.order.success', $order)->with('success', 'Payment successful. Thank you for your order!');
     }

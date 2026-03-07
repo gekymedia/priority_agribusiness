@@ -8,6 +8,24 @@
     <p class="page-subtitle">Track all egg sales transactions</p>
 </div>
 
+@php
+    $activeTab = request('tab', 'recorded');
+@endphp
+
+<ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link {{ $activeTab === 'recorded' ? 'active' : '' }}" href="{{ route('egg-sales.index', ['tab' => 'recorded']) }}">
+            <i class="fas fa-list me-1"></i> Recorded Sales
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ $activeTab === 'online' ? 'active' : '' }}" href="{{ route('egg-sales.index', ['tab' => 'online']) }}">
+            <i class="fas fa-shopping-cart me-1"></i> Online Store Sales
+        </a>
+    </li>
+</ul>
+
+@if($activeTab === 'recorded')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <a href="{{ route('egg-sales.create') }}" class="btn btn-primary">
@@ -77,9 +95,92 @@
 
         @if($sales->hasPages())
         <div class="mt-4">
-            {{ $sales->links() }}
+            {{ $sales->withQueryString()->links() }}
         </div>
         @endif
     </div>
 </div>
+@endif
+
+@if($activeTab === 'online')
+<div class="agri-card">
+    <div class="agri-card-body">
+        <p class="text-muted mb-3">
+            <i class="fas fa-info-circle me-1"></i>
+            Orders placed from the online store. Mark as <strong>Complete</strong> when you have given the eggs to the customer so the sale is recorded above.
+        </p>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Contact</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($onlineOrders as $order)
+                    <tr>
+                        <td><strong>{{ $order->order_number }}</strong></td>
+                        <td>{{ $order->created_at->format('M d, Y H:i') }}</td>
+                        <td>{{ $order->customer_name }}</td>
+                        <td>{{ $order->customer_phone }}</td>
+                        <td>
+                            @foreach($order->items as $item)
+                                <span class="badge bg-secondary">{{ $item->quantity }} {{ ucfirst($item->unit_type) }}(s)</span>
+                            @endforeach
+                        </td>
+                        <td><strong class="text-success">₵{{ number_format($order->total_amount, 2) }}</strong></td>
+                        <td>
+                            @if($order->status === \App\Models\MarketOrder::STATUS_PENDING)
+                                <span class="badge bg-warning text-dark">{{ $order->status_label }}</span>
+                            @elseif($order->status === \App\Models\MarketOrder::STATUS_PAID)
+                                <span class="badge bg-info">{{ $order->status_label }}</span>
+                            @elseif($order->status === \App\Models\MarketOrder::STATUS_DELIVERED)
+                                <span class="badge bg-success">{{ $order->status_label }}</span>
+                            @else
+                                <span class="badge bg-secondary">{{ $order->status_label }}</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($order->status === \App\Models\MarketOrder::STATUS_PAID)
+                                <form action="{{ route('egg-sales.online-orders.complete', $order) }}" method="POST" class="d-inline" onsubmit="return confirm('Mark this order as complete? Eggs will be recorded in Recorded Sales.');">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="fas fa-check me-1"></i>Mark complete
+                                    </button>
+                                </form>
+                            @elseif($order->status === \App\Models\MarketOrder::STATUS_DELIVERED)
+                                <span class="text-muted small">Recorded in sales</span>
+                            @else
+                                <span class="text-muted small">—</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No online orders yet</p>
+                            <p class="small text-muted">Orders from the store will appear here with status: Pending (Not paid), Paid, or Complete.</p>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($onlineOrders->hasPages())
+        <div class="mt-4">
+            {{ $onlineOrders->withQueryString()->links() }}
+        </div>
+        @endif
+    </div>
+</div>
+@endif
 @endsection

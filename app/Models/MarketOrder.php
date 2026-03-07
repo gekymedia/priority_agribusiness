@@ -38,6 +38,18 @@ class MarketOrder extends Model
         return $this->hasMany(MarketOrderItem::class);
     }
 
+    /** Human-readable status label for display. */
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            self::STATUS_PENDING => 'Pending (Not paid)',
+            self::STATUS_PAID => 'Paid',
+            self::STATUS_DELIVERED => 'Complete',
+            self::STATUS_CANCELLED => 'Cancelled',
+            default => ucfirst($this->status ?? ''),
+        };
+    }
+
     public static function generateOrderNumber(): string
     {
         do {
