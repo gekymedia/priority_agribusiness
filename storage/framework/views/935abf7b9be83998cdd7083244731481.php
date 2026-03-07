@@ -4,6 +4,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo e(config('app.name')); ?> - <?php echo $__env->yieldContent('title', 'Welcome'); ?></title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="<?php echo e(asset('manifest.json')); ?>">
+    <meta name="theme-color" content="#2e7d32">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="16x16" href="<?php echo e(asset('favicon/priority_agriculture_16x16.png')); ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo e(asset('favicon/priority_agriculture_32x32.png')); ?>">
+    <link rel="icon" type="image/png" sizes="48x48" href="<?php echo e(asset('favicon/priority_agriculture_48x48.png')); ?>">
+    <link rel="icon" type="image/png" sizes="64x64" href="<?php echo e(asset('favicon/priority_agriculture_64x64.png')); ?>">
+    <link rel="apple-touch-icon" sizes="192x192" href="<?php echo e(asset('mobile/priority_agriculture_192x192.png')); ?>">
+    <link rel="apple-touch-icon" sizes="512x512" href="<?php echo e(asset('mobile/priority_agriculture_512x512.png')); ?>">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -488,8 +503,8 @@
                 <div class="col-lg-8 col-xl-6">
                     <div class="auth-card animate-in">
                         <div class="auth-header">
-                            <div class="auth-logo animate-float">
-                                <i class="fas fa-seedling"></i>
+                            <div class="auth-logo animate-float" style="background: transparent; box-shadow: none;">
+                                <img src="<?php echo e(asset('mobile/priority_agriculture_192x192.png')); ?>" alt="Priority Agribusiness Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 20px;">
                             </div>
                             <h1 class="auth-title"><?php echo e(config('app.name')); ?></h1>
                             <p class="auth-subtitle">

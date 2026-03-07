@@ -22,7 +22,11 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\PayslipController;
+use App\Http\Controllers\AiAnalyticsController;
 use App\Http\Controllers\BirdMortalityController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EggStoreController;
+use App\Http\Controllers\PaymentSettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +44,18 @@ Route::get('/events', function () {
     return view('events.index');
 })->name('events.index');
 
+// Public egg store (no auth)
+Route::get('/store', [EggStoreController::class, 'index'])->name('store.index');
+Route::post('/store/cart', [EggStoreController::class, 'addToCart'])->name('store.add-to-cart');
+Route::get('/store/cart', [EggStoreController::class, 'cart'])->name('store.cart');
+Route::put('/store/cart', [EggStoreController::class, 'updateCart'])->name('store.cart.update');
+Route::get('/store/cart/remove/{unitType}', [EggStoreController::class, 'removeFromCart'])->name('store.cart.remove');
+Route::get('/store/checkout', [EggStoreController::class, 'checkout'])->name('store.checkout');
+Route::post('/store/checkout', [EggStoreController::class, 'processCheckout'])->name('store.checkout.process');
+Route::get('/store/payment/callback', [EggStoreController::class, 'paymentCallback'])->name('store.payment.callback');
+Route::get('/store/order/{order}/pending', [EggStoreController::class, 'orderPending'])->name('store.order.pending');
+Route::get('/store/order/{order}/success', [EggStoreController::class, 'orderSuccess'])->name('store.order.success');
+
 // Legal Pages
 Route::view('/privacy-policy', 'legal.privacy-policy')->name('privacy.policy');
 Route::view('/terms-of-service', 'legal.terms-of-service')->name('terms.service');
@@ -56,9 +72,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Protected routes
 Route::middleware('auth.users')->group(function () {
     // Dashboard
-    Route::get('/', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('farms', FarmController::class);
     Route::resource('houses', HouseController::class);
@@ -69,6 +83,8 @@ Route::middleware('auth.users')->group(function () {
     Route::post('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
 
     // Egg Production & Sales
+    Route::get('egg-productions/bulk-import', [EggProductionController::class, 'bulkImport'])->name('egg-productions.bulk-import');
+    Route::post('egg-productions/bulk-import', [EggProductionController::class, 'processBulkImport'])->name('egg-productions.bulk-import.process');
     Route::resource('egg-productions', EggProductionController::class);
     Route::resource('egg-sales', EggSaleController::class);
     Route::resource('bird-sales', BirdSaleController::class);
@@ -90,6 +106,10 @@ Route::middleware('auth.users')->group(function () {
     Route::post('/batches/{batch}/assign-medication', [MedicationCalendarController::class, 'assign'])->name('batches.assign-medication.store');
     Route::get('/batches/{batch}/medication-schedule', [MedicationCalendarController::class, 'viewSchedule'])->name('batches.medication-schedule');
     Route::post('/medication-schedules/{schedule}/complete', [MedicationCalendarController::class, 'completeSchedule'])->name('medication-schedules.complete');
+
+    // AI Analytics
+    Route::get('/ai-analytics', [AiAnalyticsController::class, 'index'])->name('ai-analytics.index');
+    Route::post('/ai-analytics/analyze', [AiAnalyticsController::class, 'analyze'])->name('ai-analytics.analyze');
 
     // Stop impersonation (available to anyone who is impersonating)
     Route::post('/impersonate/stop', [ImpersonationController::class, 'stop'])->name('impersonate.stop');
@@ -125,4 +145,6 @@ Route::middleware('auth.users')->group(function () {
     Route::post('/settings/test-notification', [SettingsController::class, 'testNotification'])->name('settings.test-notification');
     Route::post('/settings/clear-cache', [SettingsController::class, 'clearCache'])->name('settings.clear-cache');
     Route::post('/settings/notification-settings', [SettingsController::class, 'updateNotificationSettings'])->name('settings.notification-settings');
+    Route::get('/payment-settings', [PaymentSettingsController::class, 'index'])->name('payment-settings.index');
+    Route::put('/payment-settings', [PaymentSettingsController::class, 'update'])->name('payment-settings.update');
 });

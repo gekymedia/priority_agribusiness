@@ -89,6 +89,9 @@
                 <a href="{{ route('egg-productions.index') }}" class="btn btn-secondary">
                     <i class="fas fa-times me-2"></i>Cancel
                 </a>
+                <a href="{{ route('egg-productions.bulk-import') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-file-import me-2"></i>Bulk import instead
+                </a>
             </div>
         </form>
     </div>

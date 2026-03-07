@@ -781,6 +781,12 @@
                     <span>Medication Calendars</span>
                 </a>
             </div>
+            <div class="sidebar-menu-item">
+                <a href="{{ route('ai-analytics.index') }}" class="sidebar-link {{ request()->routeIs('ai-analytics.*') ? 'active' : '' }}">
+                    <i class="fas fa-brain"></i>
+                    <span>AI Analytics</span>
+                </a>
+            </div>
             @endif
             
             @if($showCrop)
@@ -857,9 +863,15 @@
             </div>
             @if($isAdmin)
             <div class="sidebar-menu-item">
-                <a href="{{ route('settings.index') }}" class="sidebar-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
-                    <i class="fas fa-cogs"></i>
-                    <span>System Settings</span>
+                <a href="{{ route('settings.index') }}" class="sidebar-link {{ request()->routeIs('settings.*') && !request()->routeIs('payment-settings.*') ? 'active' : '' }}">
+                    <i class="fas fa-bell"></i>
+                    <span>Notification Settings</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="{{ route('payment-settings.index') }}" class="sidebar-link {{ request()->routeIs('payment-settings.*') ? 'active' : '' }}">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Payment Settings</span>
                 </a>
             </div>
             @endif

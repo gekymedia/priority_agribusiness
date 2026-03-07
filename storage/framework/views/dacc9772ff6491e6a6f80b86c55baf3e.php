@@ -4,6 +4,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo e(config('app.name')); ?> - <?php echo $__env->yieldContent('title', 'Dashboard'); ?></title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="<?php echo e(asset('manifest.json')); ?>">
+    <meta name="theme-color" content="#2e7d32">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="16x16" href="<?php echo e(asset('favicon/priority_agriculture_16x16.png')); ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo e(asset('favicon/priority_agriculture_32x32.png')); ?>">
+    <link rel="icon" type="image/png" sizes="48x48" href="<?php echo e(asset('favicon/priority_agriculture_48x48.png')); ?>">
+    <link rel="icon" type="image/png" sizes="64x64" href="<?php echo e(asset('favicon/priority_agriculture_64x64.png')); ?>">
+    <link rel="apple-touch-icon" sizes="192x192" href="<?php echo e(asset('mobile/priority_agriculture_192x192.png')); ?>">
+    <link rel="apple-touch-icon" sizes="512x512" href="<?php echo e(asset('mobile/priority_agriculture_512x512.png')); ?>">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -690,12 +705,37 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <i class="fas fa-seedling"></i>
+            <div class="sidebar-logo" style="background: transparent; box-shadow: none; padding: 0;">
+                <img src="<?php echo e(asset('mobile/priority_agriculture_192x192.png')); ?>" alt="Priority Agribusiness Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 12px;">
             </div>
             <div class="sidebar-brand"><?php echo e(config('app.name')); ?></div>
         </div>
 
+        <?php
+            // Check employee guard first (for impersonation), then web guard
+            $user = Auth::guard('employee')->user() ?? Auth::guard('web')->user();
+            $isAdmin = false;
+            $isPoultryManager = false;
+            $isCropManager = false;
+            $isEmployee = $user instanceof \App\Models\Employee;
+            
+            if ($user instanceof \App\Models\User) {
+                $role = $user->role ?? 'admin';
+                $isAdmin = $role === 'admin';
+                $isPoultryManager = $role === 'poultry_manager';
+                $isCropManager = $role === 'crop_manager';
+            } elseif ($isEmployee && $user) {
+                $role = $user->access_level ?? '';
+                $isAdmin = $role === 'admin';
+                $isPoultryManager = $role === 'poultry_manager';
+                $isCropManager = $role === 'crop_manager';
+            }
+            
+            $showPoultry = $isAdmin || $isPoultryManager;
+            $showCrop = $isAdmin || $isCropManager;
+            $canManageEmployees = $isAdmin;
+        ?>
+        
         <nav class="sidebar-menu">
             <div class="sidebar-menu-item">
                 <a href="<?php echo e(route('dashboard')); ?>" class="sidebar-link <?php echo e(request()->routeIs('dashboard') ? 'active' : ''); ?>">
@@ -703,71 +743,9 @@
                     <span>Dashboard</span>
                 </a>
             </div>
+            
+            <?php if($showPoultry): ?>
             <div class="sidebar-menu-item">
-                <a href="<?php echo e(route('farms.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('farms.*') ? 'active' : ''); ?>">
-                    <i class="fas fa-tractor"></i>
-                    <span>Farms</span>
-                </a>
-            </div>
-            <div class="sidebar-menu-item">
-                <a href="<?php echo e(route('houses.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('houses.*') ? 'active' : ''); ?>">
-                    <i class="fas fa-home"></i>
-                    <span>Houses</span>
-                </a>
-            </div>
-            <div class="sidebar-menu-item">
-                <a href="<?php echo e(route('batches.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('batches.*') ? 'active' : ''); ?>">
-                    <i class="fas fa-dove"></i>
-                    <span>Bird Batches</span>
-                </a>
-            </div>
-            <div class="sidebar-menu-item">
-                <a href="<?php echo e(route('fields.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('fields.*') ? 'active' : ''); ?>">
-                    <i class="fas fa-border-all"></i>
-                    <span>Fields</span>
-                </a>
-            </div>
-            <div class="sidebar-menu-item">
-                <a href="<?php echo e(route('plantings.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('plantings.*') ? 'active' : ''); ?>">
-                    <i class="fas fa-leaf"></i>
-                    <span>Plantings</span>
-                </a>
-            </div>
-            <div class="sidebar-menu-item">
-                <a href="<?php echo e(route('tasks.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('tasks.*') ? 'active' : ''); ?>">
-                    <i class="fas fa-tasks"></i>
-                    <span>Tasks</span>
-                </a>
-            </div>
-            <div class="sidebar-menu-item">
-                <a href="<?php echo e(route('medication-calendars.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('medication-calendars.*') ? 'active' : ''); ?>">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Medication Calendars</span>
-                </a>
-            </div>
-            <?php
-                $user = auth()->user();
-                // Show Employees menu to:
-                // 1. Regular Users (they can be admins)
-                // 2. Employees with manager access or above
-                $canManageEmployees = false;
-                if ($user instanceof \App\Models\User) {
-                    // Regular users can see it - middleware will handle access
-                    $canManageEmployees = true;
-                } elseif ($user instanceof \App\Models\Employee) {
-                    // Employees need manager access or above
-                    $canManageEmployees = $user->isManager();
-                }
-            ?>
-            <?php if($canManageEmployees): ?>
-            <div class="sidebar-menu-item">
-                <a href="<?php echo e(route('employees.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('employees.*') ? 'active' : ''); ?>">
-                    <i class="fas fa-users"></i>
-                    <span>Employees</span>
-                </a>
-            </div>
-            <?php endif; ?>
-            <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
                 <a href="<?php echo e(route('egg-productions.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('egg-productions.*') ? 'active' : ''); ?>">
                     <i class="fas fa-egg"></i>
                     <span>Egg Production</span>
@@ -791,12 +769,112 @@
                     <span>Expenses</span>
                 </a>
             </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('bird-mortality.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('bird-mortality.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-skull-crossbones"></i>
+                    <span>Bird Mortality</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('medication-calendars.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('medication-calendars.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Medication Calendars</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('ai-analytics.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('ai-analytics.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-brain"></i>
+                    <span>AI Analytics</span>
+                </a>
+            </div>
+            <?php endif; ?>
+            
+            <?php if($showCrop): ?>
+            <div class="sidebar-menu-item" style="<?php echo e($showPoultry ? 'margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);' : ''); ?>">
+                <a href="<?php echo e(route('fields.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('fields.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-border-all"></i>
+                    <span>Fields</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('plantings.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('plantings.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-leaf"></i>
+                    <span>Plantings</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('tasks.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('tasks.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-tasks"></i>
+                    <span>Tasks</span>
+                </a>
+            </div>
+            <?php endif; ?>
+            
+            <?php if($canManageEmployees): ?>
+            <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
+                <a href="<?php echo e(route('employees.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('employees.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-users"></i>
+                    <span>Employees & Users</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('payroll.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('payroll.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-money-check-alt"></i>
+                    <span>Payroll</span>
+                </a>
+            </div>
+            <?php endif; ?>
+            
+            <?php if($isEmployee): ?>
+            <div class="sidebar-menu-item" style="<?php echo e($canManageEmployees ? '' : 'margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);'); ?>">
+                <a href="<?php echo e(route('payslips.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('payslips.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>My Payslips</span>
+                </a>
+            </div>
+            <?php endif; ?>
+            
+            <?php if($isAdmin): ?>
+            <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
+                <a href="<?php echo e(route('farms.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('farms.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-tractor"></i>
+                    <span>Farms</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('houses.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('houses.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-home"></i>
+                    <span>Houses</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('batches.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('batches.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-dove"></i>
+                    <span>Bird Batches</span>
+                </a>
+            </div>
+            <?php endif; ?>
+            
             <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
                 <a href="<?php echo e(route('profile.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('profile.*') ? 'active' : ''); ?>">
                     <i class="fas fa-user-cog"></i>
                     <span>Profile Settings</span>
                 </a>
             </div>
+            <?php if($isAdmin): ?>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('settings.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('settings.*') && !request()->routeIs('payment-settings.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-bell"></i>
+                    <span>Notification Settings</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('payment-settings.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('payment-settings.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Payment Settings</span>
+                </a>
+            </div>
+            <?php endif; ?>
         </nav>
 
         <?php if(auth()->guard()->check()): ?>
@@ -804,16 +882,23 @@
             <div class="sidebar-user">
                 <div class="sidebar-user-avatar">
                     <?php
-                        $user = auth()->user();
-                        $name = $user instanceof \App\Models\Employee ? $user->full_name : $user->name;
-                        $role = $user instanceof \App\Models\Employee ? ucfirst($user->access_level) : ucfirst($user->role ?? 'User');
+                        $footerUser = Auth::guard('employee')->user() ?? Auth::guard('web')->user();
+                        $name = $footerUser instanceof \App\Models\Employee ? $footerUser->full_name : ($footerUser->name ?? 'User');
+                        $roleLabels = [
+                            'admin' => 'Admin',
+                            'poultry_manager' => 'Poultry Farm Manager',
+                            'crop_manager' => 'Crop Farms Manager',
+                        ];
+                        $displayRole = $footerUser instanceof \App\Models\Employee 
+                            ? ($roleLabels[$footerUser->access_level] ?? ucfirst($footerUser->access_level ?? ''))
+                            : ($roleLabels[$footerUser->role] ?? ucfirst($footerUser->role ?? 'Admin'));
                     ?>
                     <?php echo e(substr($name, 0, 1)); ?>
 
                 </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-user-name"><?php echo e($name); ?></div>
-                    <div class="sidebar-user-role"><?php echo e($role); ?></div>
+                    <div class="sidebar-user-role"><?php echo e($displayRole); ?></div>
                 </div>
                 <div class="dropdown">
                     <button class="btn btn-link p-0" type="button" data-bs-toggle="dropdown">
@@ -843,6 +928,34 @@
 
     <!-- Main Content -->
     <main class="main-container animate-in">
+        <?php if(\App\Http\Controllers\ImpersonationController::isImpersonating()): ?>
+            <?php
+                $impersonator = \App\Http\Controllers\ImpersonationController::getImpersonator();
+                $impersonatorName = $impersonator instanceof \App\Models\User 
+                    ? $impersonator->name 
+                    : ($impersonator instanceof \App\Models\Employee ? $impersonator->full_name : 'Admin');
+                $currentUser = auth()->user();
+                $currentName = $currentUser instanceof \App\Models\Employee 
+                    ? $currentUser->full_name 
+                    : ($currentUser instanceof \App\Models\User ? $currentUser->name : 'User');
+            ?>
+            <div class="impersonation-banner alert alert-warning d-flex align-items-center justify-content-between mb-4" role="alert" style="background: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%); border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-user-secret fa-2x me-3 text-dark"></i>
+                    <div>
+                        <strong class="text-dark">Impersonation Active</strong>
+                        <div class="small text-dark">You (<?php echo e($impersonatorName); ?>) are viewing as <strong><?php echo e($currentName); ?></strong></div>
+                    </div>
+                </div>
+                <form action="<?php echo e(route('impersonate.stop')); ?>" method="POST" class="mb-0">
+                    <?php echo csrf_field(); ?>
+                    <button type="submit" class="btn btn-dark btn-sm">
+                        <i class="fas fa-sign-out-alt me-1"></i>Stop Impersonation
+                    </button>
+                </form>
+            </div>
+        <?php endif; ?>
+
         <?php if(session('success')): ?>
             <div class="alert alert-modern alert-success alert-dismissible fade show mb-4" role="alert">
                 <i class="fas fa-check-circle me-2"></i>
@@ -947,6 +1060,21 @@
                 }
             });
         });
+    </script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
     </script>
 </body>
 </html><?php /**PATH D:\projects\priority_agribusiness\resources\views/layouts/app.blade.php ENDPATH**/ ?>

@@ -13,6 +13,9 @@
         <a href="{{ route('egg-productions.create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>Add Production Record
         </a>
+        <a href="{{ route('egg-productions.bulk-import') }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-file-import me-2"></i>Bulk Import
+        </a>
     </div>
 </div>
 

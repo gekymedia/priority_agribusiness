@@ -23,6 +23,6 @@ class ExpenseCategory extends Model
 
     public function expenses(): HasMany
     {
-        return $this->hasMany(PoultryExpense::class, 'category_id');
+        return $this->hasMany(PoultryExpense::class, 'category_id'); // FK on poultry_expenses
     }
 }

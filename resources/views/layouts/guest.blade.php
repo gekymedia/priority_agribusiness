@@ -533,6 +533,11 @@
                         @yield('auth-content')
 
                         <div class="auth-footer">
+                            @if(request()->routeIs('store.*'))
+                                <a href="{{ route('login') }}" class="btn btn-link btn-sm text-muted mb-2">Staff login</a>
+                            @else
+                                <a href="{{ route('store.index') }}" class="btn btn-outline-primary btn-sm mb-2"><i class="fas fa-egg me-1"></i> Buy eggs</a>
+                            @endif
                             <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
                         </div>
                     </div>

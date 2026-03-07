@@ -37,14 +37,23 @@ class NotificationSetting extends Model
     public static function isEnabled(string $module, string $event): bool
     {
         $cacheKey = "notification_setting_{$module}_{$event}";
-        
-        return Cache::remember($cacheKey, 300, function () use ($module, $event) {
-            $setting = self::where('module', $module)
-                ->where('event', $event)
-                ->first();
-            
-            return $setting ? $setting->enabled : true;
-        });
+
+        try {
+            return Cache::remember($cacheKey, 300, function () use ($module, $event) {
+                return self::resolveEnabled($module, $event);
+            });
+        } catch (\Throwable $e) {
+            return self::resolveEnabled($module, $event);
+        }
+    }
+
+    protected static function resolveEnabled(string $module, string $event): bool
+    {
+        $setting = self::where('module', $module)
+            ->where('event', $event)
+            ->first();
+
+        return $setting ? $setting->enabled : true;
     }
 
     public static function getChannels(string $module, string $event): array
@@ -60,11 +69,15 @@ class NotificationSetting extends Model
     {
         $modules = ['egg_production', 'egg_sales', 'bird_sales', 'expenses', 'employees'];
         $events = ['created', 'updated', 'deleted'];
-        
-        foreach ($modules as $module) {
-            foreach ($events as $event) {
-                Cache::forget("notification_setting_{$module}_{$event}");
+
+        try {
+            foreach ($modules as $module) {
+                foreach ($events as $event) {
+                    Cache::forget("notification_setting_{$module}_{$event}");
+                }
             }
+        } catch (\Throwable $e) {
+            // Ignore if cache store unavailable (e.g. cache table missing)
         }
     }
 

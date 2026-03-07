@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'System Settings')
+@section('title', 'Notification Settings')
 
 @section('content')
 <div class="settings-page">
     <div class="page-header">
-        <h1 class="page-title">System Settings</h1>
+        <h1 class="page-title">Notification Settings</h1>
         <p class="page-subtitle">Manage notification settings and test notification channels</p>
     </div>
 

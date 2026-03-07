@@ -62,9 +62,6 @@ unset($__errorArgs, $__bag); ?>
             <i class="fas fa-sign-in-alt me-2"></i>Login
         </button>
     </div>
-    <div class="text-center">
-        <p class="mb-0">Don't have an account? <a href="<?php echo e(route('register')); ?>" class="auth-link">Register here</a></p>
-    </div>
 </form>
 <?php $__env->stopSection(); ?>
 <?php echo $__env->make('layouts.guest', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\priority_agribusiness\resources\views/auth/login.blade.php ENDPATH**/ ?>

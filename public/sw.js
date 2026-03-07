@@ -1,6 +1,7 @@
 // Service Worker for Priority Agribusiness PWA
-const CACHE_NAME = 'priority-agribusiness-v1';
-const RUNTIME_CACHE = 'priority-agribusiness-runtime-v1';
+// Strategy: Network First (try server first, use cache only when offline or network fails)
+const CACHE_NAME = 'priority-agribusiness-v2';
+const RUNTIME_CACHE = 'priority-agribusiness-runtime-v2';
 const PRECACHE_ASSETS = ['/', '/manifest.json'];
 
 self.addEventListener('install', (event) => {
@@ -20,21 +21,28 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin) || 
+  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin) ||
       event.request.url.includes('/admin') || event.request.url.includes('/api')) {
     return;
   }
 
+  // Network First: fetch from server first, fall back to cache only when offline/fail
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== 'basic') return response;
-        const clone = response.clone();
-        caches.open(RUNTIME_CACHE).then((cache) => cache.put(event.request, clone));
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.status === 200 && response.type === 'basic') {
+          const clone = response.clone();
+          caches.open(RUNTIME_CACHE).then((cache) => cache.put(event.request, clone));
+        }
         return response;
-      }).catch(() => event.request.destination === 'document' ? caches.match('/') : null);
-    })
+      })
+      .catch(() => {
+        return caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          if (event.request.destination === 'document') return caches.match('/');
+          return null;
+        });
+      })
   );
 });
 

@@ -3,7 +3,11 @@
 <?php $__env->startSection('content'); ?>
 <div class="page-header">
     <h1 class="page-title">Dashboard</h1>
-    <p class="page-subtitle">Welcome back, <?php echo e(auth()->user()->name); ?>! Here's an overview of your agribusiness.</p>
+    <?php
+        $user = auth()->user();
+        $userName = $user instanceof \App\Models\Employee ? $user->full_name : ($user->name ?? 'User');
+    ?>
+    <p class="page-subtitle">Welcome back, <?php echo e($userName); ?>! Here's an overview of your agribusiness.</p>
 </div>
 
 <!-- Stats Overview -->
@@ -92,11 +96,11 @@
             <div class="agri-card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <h6 class="text-muted mb-1">Total Houses</h6>
-                        <h3 class="mb-0"><?php echo e(\App\Models\House::count()); ?></h3>
+                        <h6 class="text-muted mb-1">Eggs Produced Today</h6>
+                        <h3 class="mb-0"><?php echo e($eggsProducedToday ?? 0); ?></h3>
                     </div>
                     <div style="width: 60px; height: 60px; background: linear-gradient(135deg, rgba(46, 125, 50, 0.1), rgba(139, 195, 74, 0.1)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-home fa-2x" style="color: var(--primary);"></i>
+                        <i class="fas fa-egg fa-2x" style="color: var(--primary);"></i>
                     </div>
                 </div>
             </div>
@@ -108,11 +112,11 @@
             <div class="agri-card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <h6 class="text-muted mb-1">Total Fields</h6>
-                        <h3 class="mb-0"><?php echo e(\App\Models\Field::count()); ?></h3>
+                        <h6 class="text-muted mb-1">Eggs Sold Today</h6>
+                        <h3 class="mb-0"><?php echo e($eggsSoldToday ?? 0); ?></h3>
                     </div>
                     <div style="width: 60px; height: 60px; background: linear-gradient(135deg, rgba(139, 195, 74, 0.1), rgba(76, 175, 80, 0.1)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-border-all fa-2x" style="color: var(--accent);"></i>
+                        <i class="fas fa-shopping-basket fa-2x" style="color: var(--accent);"></i>
                     </div>
                 </div>
             </div>
@@ -146,6 +150,23 @@
                     <div style="width: 60px; height: 60px; background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(139, 195, 74, 0.1)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                         <i class="fas fa-check-circle fa-2x" style="color: var(--success);"></i>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Egg Production vs Sales Chart -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="agri-card">
+            <div class="agri-card-header">
+                <h3><i class="fas fa-chart-line me-2"></i>Egg Production vs Egg Sales</h3>
+            </div>
+            <div class="agri-card-body">
+                <p class="text-muted small mb-3">Day-by-day for the last 31 days: production (eggs collected, net of damaged/internal use) vs eggs sold.</p>
+                <div class="position-relative" style="height: 320px;">
+                    <canvas id="eggProductionVsSalesChart"></canvas>
                 </div>
             </div>
         </div>
@@ -354,6 +375,49 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    var chartData = <?php echo json_encode($chart ?? ['labels' => [], 'production' => [], 'sales' => []]) ?>;
+    var ctx = document.getElementById('eggProductionVsSalesChart');
+    if (!ctx || !chartData.labels.length) return;
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                {
+                    label: 'Egg Production',
+                    data: chartData.production,
+                    borderColor: 'rgb(46, 125, 50)',
+                    backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'Egg Sales',
+                    data: chartData.sales,
+                    borderColor: 'rgb(255, 152, 0)',
+                    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' }
+            },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Eggs' } }
+            }
+        }
+    });
+})();
+</script>
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\projects\priority_agribusiness\resources\views/dashboard.blade.php ENDPATH**/ ?>
