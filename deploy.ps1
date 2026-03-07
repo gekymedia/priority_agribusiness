@@ -43,8 +43,8 @@ if ($LASTEXITCODE -ne 0) { Write-Host "No changes to commit" -ForegroundColor Ye
 git push origin main
 
 Write-Host "Deploying to production..." -ForegroundColor Cyan
-# Discard local changes to storage on server so pull can succeed; then pull (preserves .env etc.)
-$remoteCmd = 'cd /home/gekymedia/web/agribusiness.prioritysolutionsagency.com/public_html && git restore storage/ 2>/dev/null; git fetch origin main && git checkout main && git pull origin main && composer install --no-dev --optimize-autoloader && php artisan migrate --force && php artisan optimize:clear && php artisan queue:restart && chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache'
+# On server: preserve .env, pull quietly (no huge "deleted vendor" list), restore working tree, restore .env, then composer/artisan
+$remoteCmd = 'cd /home/gekymedia/web/agribusiness.prioritysolutionsagency.com/public_html && (test -f .env && cp .env .env.deploykeep) && git restore storage/ 2>/dev/null; git fetch origin main && git checkout main && (git merge origin/main --no-stat -q 2>/dev/null || git pull origin main --no-stat -q 2>/dev/null) && git restore . && (test -f .env.deploykeep && mv .env.deploykeep .env) && composer install --no-dev --optimize-autoloader && php artisan migrate --force && php artisan optimize:clear && php artisan queue:restart && chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache && echo Deploy done.'
 ssh root@gekymedia.com $remoteCmd
 
 Pop-Location
