@@ -234,6 +234,46 @@
                 </div>
             </div>
 
+            <!-- Priority Bank -->
+            <div class="agri-card mb-4">
+                <div class="agri-card-header" style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.9), rgba(56, 189, 248, 0.9));">
+                    <h3><i class="fas fa-university me-2"></i>Priority Bank</h3>
+                </div>
+                <div class="agri-card-body">
+                    @if(session('success'))
+                        <div class="alert alert-success alert-dismissible fade show">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+                    @endif
+                    <p class="text-muted mb-4">Configure the connection for Account & Finance (income/expenditure sync). Values saved here are used when syncing from Income and Expenditure. Database settings take precedence over .env.</p>
+                    <form action="{{ route('settings.priority-bank.update') }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="priority_bank_api_url" class="form-label">API URL</label>
+                                <input type="url" name="priority_bank_api_url" id="priority_bank_api_url" class="form-control" value="{{ old('priority_bank_api_url', $priorityBankSettings['priority_bank_api_url'] ?? '') }}" placeholder="https://bank.prioritysolutionsagency.com">
+                                <div class="form-text">Base URL of the Priority Bank API (no trailing slash).</div>
+                            </div>
+                            <div class="col-12">
+                                <label for="priority_bank_api_token" class="form-label">API Token</label>
+                                <div class="input-group">
+                                    <input type="password" name="priority_bank_api_token" id="priority_bank_api_token" class="form-control" value="" placeholder="{{ !empty($priorityBankSettings['priority_bank_api_token']) ? '•••••••••••• (stored – leave blank to keep)' : 'Enter API token' }}" autocomplete="off" data-token-stored="{{ !empty($priorityBankSettings['priority_bank_api_token']) ? '1' : '0' }}">
+                                    <button type="button" class="btn btn-outline-secondary" id="priority_bank_token_eye" onclick="togglePriorityBankToken()" title="Show token"><i class="fas fa-eye" id="priority_bank_token_icon"></i></button>
+                                </div>
+                                <div class="form-text">Bearer token for Priority Bank API. The eye icon reveals what you type; stored tokens are not shown for security.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="priority_bank_system_id" class="form-label">System ID</label>
+                                <input type="text" name="priority_bank_system_id" id="priority_bank_system_id" class="form-control" value="{{ old('priority_bank_system_id', $priorityBankSettings['priority_bank_system_id'] ?? 'priority_agriculture') }}" placeholder="priority_agriculture">
+                                <div class="form-text">System ID for this app in Priority Bank.</div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save Priority Bank Settings</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- Cache Management -->
             <div class="agri-card">
                 <div class="agri-card-header" style="background: linear-gradient(135deg, rgba(244, 67, 54, 0.9), rgba(239, 83, 80, 0.9));">
@@ -611,6 +651,29 @@
         .finally(() => {
             checkbox.classList.remove('updating');
         });
+    }
+
+    function togglePriorityBankToken() {
+        var input = document.getElementById('priority_bank_api_token');
+        var icon = document.getElementById('priority_bank_token_icon');
+        var stored = input.getAttribute('data-token-stored') === '1';
+        var val = (input.value || '').trim();
+        var maskLike = /^[\*•]+$/.test(val) && val.length >= 3;
+        if (stored && (val === '' || maskLike)) {
+            alert('The stored API token cannot be shown for security. Enter a new token to replace it, or leave the field blank when saving to keep the existing token.');
+            return;
+        }
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+            icon.title = 'Hide token';
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+            icon.title = 'Show token';
+        }
     }
 </script>
 @endsection

@@ -10,86 +10,7 @@
     <p class="page-subtitle">Welcome back, <?php echo e($userName); ?>! Here's an overview of your agribusiness.</p>
 </div>
 
-<!-- Stats Overview -->
-<div class="row g-4 mb-4">
-    <div class="col-lg-3 col-md-6">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                    <h6 class="text-muted mb-2" style="font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Total Farms</h6>
-                    <h2 class="mb-0" style="font-size: 2.5rem; font-weight: 800; color: var(--primary);"><?php echo e(\App\Models\Farm::count()); ?></h2>
-                </div>
-                <div class="stat-icon" style="background: linear-gradient(135deg, rgba(46, 125, 50, 0.1), rgba(139, 195, 74, 0.1));">
-                    <i class="fas fa-tractor" style="color: var(--primary);"></i>
-                </div>
-            </div>
-            <div class="d-flex align-items-center">
-                <span class="badge bg-success bg-opacity-10 text-success">
-                    <i class="fas fa-arrow-up me-1"></i>Active
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-3 col-md-6">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                    <h6 class="text-muted mb-2" style="font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Bird Batches</h6>
-                    <h2 class="mb-0" style="font-size: 2.5rem; font-weight: 800; color: var(--accent);"><?php echo e(\App\Models\BirdBatch::count()); ?></h2>
-                </div>
-                <div class="stat-icon" style="background: linear-gradient(135deg, rgba(139, 195, 74, 0.1), rgba(76, 175, 80, 0.1));">
-                    <i class="fas fa-dove" style="color: var(--accent);"></i>
-                </div>
-            </div>
-            <div class="d-flex align-items-center">
-                <span class="badge bg-success bg-opacity-10 text-success">
-                    <i class="fas fa-check-circle me-1"></i><?php echo e(\App\Models\BirdBatch::where('status', 'active')->count()); ?> Active
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-3 col-md-6">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                    <h6 class="text-muted mb-2" style="font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Plantings</h6>
-                    <h2 class="mb-0" style="font-size: 2.5rem; font-weight: 800; color: var(--secondary);"><?php echo e(\App\Models\Planting::count()); ?></h2>
-                </div>
-                <div class="stat-icon" style="background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 193, 7, 0.1));">
-                    <i class="fas fa-leaf" style="color: var(--secondary);"></i>
-                </div>
-            </div>
-            <div class="d-flex align-items-center">
-                <span class="badge bg-warning bg-opacity-10 text-warning">
-                    <i class="fas fa-seedling me-1"></i><?php echo e(\App\Models\Planting::where('status', 'growing')->count()); ?> Growing
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-3 col-md-6">
-        <div class="stat-card">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                    <h6 class="text-muted mb-2" style="font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Pending Tasks</h6>
-                    <h2 class="mb-0" style="font-size: 2.5rem; font-weight: 800; color: var(--danger);"><?php echo e(\App\Models\Task::where('status', 'pending')->count()); ?></h2>
-                </div>
-                <div class="stat-icon" style="background: linear-gradient(135deg, rgba(244, 67, 54, 0.1), rgba(239, 83, 80, 0.1));">
-                    <i class="fas fa-tasks" style="color: var(--danger);"></i>
-                </div>
-            </div>
-            <div class="d-flex align-items-center">
-                <span class="badge bg-danger bg-opacity-10 text-danger">
-                    <i class="fas fa-clock me-1"></i>Requires Attention
-                </span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Additional Stats Row -->
+<!-- Stats Row -->
 <div class="row g-4 mb-4">
     <div class="col-lg-3 col-md-6">
         <div class="agri-card">
@@ -149,6 +70,49 @@
                     </div>
                     <div style="width: 60px; height: 60px; background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(139, 195, 74, 0.1)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                         <i class="fas fa-check-circle fa-2x" style="color: var(--success);"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Account & Finance Balances -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="agri-card">
+            <div class="agri-card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-1">Income & Expenditure Balance</h6>
+                        <h3 class="mb-0 <?php echo e(($incomeExpenditureBalance ?? 0) >= 0 ? 'text-success' : 'text-danger'); ?>">
+                            ₵<?php echo e(number_format($incomeExpenditureBalance ?? 0, 2)); ?>
+
+                        </h3>
+                        <small class="text-muted">Total recorded income minus expenditure</small>
+                    </div>
+                    <div style="width: 56px; height: 56px; background: linear-gradient(135deg, rgba(46, 125, 50, 0.12), rgba(139, 195, 74, 0.12)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-balance-scale fa-xl" style="color: var(--primary);"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="agri-card">
+            <div class="agri-card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-1">Bank Balance</h6>
+                        <?php if(isset($bankBalance)): ?>
+                            <h3 class="mb-0 text-primary">₵<?php echo e(number_format($bankBalance, 2)); ?></h3>
+                            <small class="text-muted">From Priority Bank</small>
+                        <?php else: ?>
+                            <p class="mb-0 text-muted small">Configure Priority Bank in Settings to show balance.</p>
+                        <?php endif; ?>
+                    </div>
+                    <div style="width: 56px; height: 56px; background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(56, 189, 248, 0.12)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-university fa-xl" style="color: #0ea5e9;"></i>
                     </div>
                 </div>
             </div>

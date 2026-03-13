@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\EggProduction;
 use App\Models\EggSale;
+use App\Models\Income;
+use App\Models\PoultryExpense;
+use App\Services\PriorityBankIntegrationService;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -14,7 +17,30 @@ class DashboardController extends Controller
         $eggsProducedToday = $this->eggsProducedToday();
         $eggsSoldToday = $this->eggsSoldToday();
 
-        return view('dashboard', compact('chart', 'eggsProducedToday', 'eggsSoldToday'));
+        $totalIncome = \Illuminate\Support\Facades\Schema::hasTable('incomes')
+            ? (float) Income::sum('amount')
+            : 0.0;
+        $totalExpenditure = (float) PoultryExpense::sum('amount');
+        $incomeExpenditureBalance = $totalIncome - $totalExpenditure;
+
+        $bankBalance = null;
+        try {
+            $client = PriorityBankIntegrationService::clientFromSettings();
+            $result = $client->getBalance();
+            if ($result && isset($result['balance'])) {
+                $bankBalance = (float) $result['balance'];
+            }
+        } catch (\Throwable $e) {
+            // Leave bankBalance null on failure
+        }
+
+        return view('dashboard', compact(
+            'chart',
+            'eggsProducedToday',
+            'eggsSoldToday',
+            'incomeExpenditureBalance',
+            'bankBalance'
+        ));
     }
 
     protected function eggsProducedToday(): int

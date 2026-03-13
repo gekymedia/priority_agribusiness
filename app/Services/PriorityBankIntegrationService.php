@@ -7,20 +7,31 @@ use App\Models\BirdSale;
 use App\Models\CropSale;
 use App\Models\PoultryExpense;
 use App\Models\CropInputExpense;
+use App\Models\SystemSetting;
 use App\Services\PriorityBankApiClient;
 use Illuminate\Support\Facades\Log;
 
 class PriorityBankIntegrationService
 {
     protected PriorityBankApiClient $client;
-    protected string $systemId = 'priority_agriculture';
+    protected string $systemId;
 
     public function __construct()
     {
-        $this->client = new PriorityBankApiClient(
-            config('services.priority_bank.api_url'),
-            config('services.priority_bank.api_token')
-        );
+        $baseUrl = rtrim((string) (SystemSetting::get('priority_bank_api_url') ?: config('services.priority_bank.api_url', '')), '/');
+        $token = SystemSetting::get('priority_bank_api_token') ?: config('services.priority_bank.api_token');
+        $this->client = new PriorityBankApiClient($baseUrl, $token);
+        $this->systemId = (string) (SystemSetting::get('priority_bank_system_id') ?: config('services.priority_bank.system_id', 'priority_agriculture'));
+    }
+
+    /**
+     * Create a client using SystemSetting/config (e.g. for getBalance from Dashboard).
+     */
+    public static function clientFromSettings(): PriorityBankApiClient
+    {
+        $baseUrl = rtrim((string) (SystemSetting::get('priority_bank_api_url') ?: config('services.priority_bank.api_url', '')), '/');
+        $token = SystemSetting::get('priority_bank_api_token') ?: config('services.priority_bank.api_token');
+        return new PriorityBankApiClient($baseUrl, $token);
     }
 
     /**
@@ -28,7 +39,7 @@ class PriorityBankIntegrationService
      */
     public function pushEggSale(EggSale $eggSale): bool
     {
-        if (!config('services.priority_bank.api_token')) {
+        if (! SystemSetting::get('priority_bank_api_token') && ! config('services.priority_bank.api_token')) {
             return false;
         }
 
@@ -71,7 +82,7 @@ class PriorityBankIntegrationService
      */
     public function pushBirdSale(BirdSale $birdSale): bool
     {
-        if (!config('services.priority_bank.api_token')) {
+        if (! SystemSetting::get('priority_bank_api_token') && ! config('services.priority_bank.api_token')) {
             return false;
         }
 
@@ -113,7 +124,7 @@ class PriorityBankIntegrationService
      */
     public function pushCropSale(CropSale $cropSale): bool
     {
-        if (!config('services.priority_bank.api_token')) {
+        if (! SystemSetting::get('priority_bank_api_token') && ! config('services.priority_bank.api_token')) {
             return false;
         }
 
@@ -154,14 +165,15 @@ class PriorityBankIntegrationService
      */
     public function pushPoultryExpense(PoultryExpense $expense): bool
     {
-        if (!config('services.priority_bank.api_token')) {
+        if (! SystemSetting::get('priority_bank_api_token') && ! config('services.priority_bank.api_token')) {
             return false;
         }
 
         try {
+            $extId = $expense->external_transaction_id ?? ('agri_poultry_expense_' . $expense->id);
             $result = $this->client->pushExpense(
                 systemId: $this->systemId,
-                externalTransactionId: 'agri_poultry_expense_' . $expense->id,
+                externalTransactionId: $extId,
                 amount: (float) $expense->amount,
                 date: $expense->date->format('Y-m-d'),
                 channel: 'cash',
@@ -191,7 +203,7 @@ class PriorityBankIntegrationService
      */
     public function pushCropInputExpense(CropInputExpense $expense): bool
     {
-        if (!config('services.priority_bank.api_token')) {
+        if (! SystemSetting::get('priority_bank_api_token') && ! config('services.priority_bank.api_token')) {
             return false;
         }
 

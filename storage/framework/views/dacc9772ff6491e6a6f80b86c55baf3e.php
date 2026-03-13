@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo e(config('app.name')); ?> - <?php echo $__env->yieldContent('title', 'Dashboard'); ?></title>
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="<?php echo e(asset('manifest.json')); ?>">
-    <meta name="theme-color" content="#2e7d32">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    
     <!-- Favicons -->
     <link rel="icon" type="image/png" sizes="16x16" href="<?php echo e(asset('favicon/priority_agriculture_16x16.png')); ?>">
     <link rel="icon" type="image/png" sizes="32x32" href="<?php echo e(asset('favicon/priority_agriculture_32x32.png')); ?>">
@@ -764,9 +758,21 @@
                 </a>
             </div>
             <div class="sidebar-menu-item">
-                <a href="<?php echo e(route('expenses.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('expenses.*') ? 'active' : ''); ?>">
+                <a href="<?php echo e(route('expenses.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('expenses.*') && !request()->routeIs('finance.*') ? 'active' : ''); ?>">
                     <i class="fas fa-money-bill-wave"></i>
                     <span>Expenses</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('finance.income.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('finance.income.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-arrow-down-to-line"></i>
+                    <span>Income</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('finance.expenditure.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('finance.expenditure.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-arrow-up-from-line"></i>
+                    <span>Expenditure (Bank)</span>
                 </a>
             </div>
             <div class="sidebar-menu-item">
@@ -821,6 +827,22 @@
                 <a href="<?php echo e(route('payroll.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('payroll.*') ? 'active' : ''); ?>">
                     <i class="fas fa-money-check-alt"></i>
                     <span>Payroll</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
+                <div class="px-3 py-1 small text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px;">Settings</div>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('settings.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('settings.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-cog"></i>
+                    <span>System Settings</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="<?php echo e(route('logs.index')); ?>" class="sidebar-link <?php echo e(request()->routeIs('logs.*') ? 'active' : ''); ?>">
+                    <i class="fas fa-file-alt"></i>
+                    <span>System Logs</span>
                 </a>
             </div>
             <?php endif; ?>
@@ -969,6 +991,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <?php echo $__env->yieldPushContent('scripts'); ?>
     <script>
         // Mobile menu toggle
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -1060,21 +1083,6 @@
                 }
             });
         });
-    </script>
-
-    <!-- Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful');
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
     </script>
 </body>
 </html><?php /**PATH D:\projects\priority_agribusiness\resources\views/layouts/app.blade.php ENDPATH**/ ?>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\NotificationSetting;
+use App\Models\SystemSetting;
 use App\Services\Notifications\Notifier;
 
 class SettingsController extends Controller
@@ -11,10 +12,41 @@ class SettingsController extends Controller
     public function index()
     {
         NotificationSetting::seedDefaults();
-        
+
         $notificationSettings = NotificationSetting::all()->groupBy('module');
-        
-        return view('settings.index', compact('notificationSettings'));
+
+        $priorityBankSettings = [
+            'priority_bank_api_url' => SystemSetting::get('priority_bank_api_url', config('services.priority_bank.api_url', '')),
+            'priority_bank_api_token' => SystemSetting::get('priority_bank_api_token', config('services.priority_bank.api_token', '')),
+            'priority_bank_system_id' => SystemSetting::get('priority_bank_system_id', config('services.priority_bank.system_id', 'priority_agriculture')),
+        ];
+
+        return view('settings.index', compact('notificationSettings', 'priorityBankSettings'));
+    }
+
+    public function updatePriorityBank(Request $request)
+    {
+        $validated = $request->validate([
+            'priority_bank_api_url' => 'nullable|string|max:500',
+            'priority_bank_api_token' => 'nullable|string|max:500',
+            'priority_bank_system_id' => 'nullable|string|max:100',
+        ]);
+
+        $tokenVal = $validated['priority_bank_api_token'] ?? '';
+        $maskPatterns = ['***', '••••••••••••', '********', '••••••••'];
+        $isMaskOrEmpty = $tokenVal === '' || in_array($tokenVal, $maskPatterns, true)
+            || (preg_match('/^[\*•]+$/', (string) $tokenVal) && strlen((string) $tokenVal) >= 3);
+
+        if ($isMaskOrEmpty) {
+            $existing = SystemSetting::get('priority_bank_api_token') ?: config('services.priority_bank.api_token', '');
+            if ($existing !== '') {
+                $validated['priority_bank_api_token'] = $existing;
+            }
+        }
+
+        SystemSetting::bulkUpdate($validated);
+
+        return redirect()->route('settings.index')->with('success', 'Priority Bank settings updated successfully.');
     }
 
     public function testNotification(Request $request)

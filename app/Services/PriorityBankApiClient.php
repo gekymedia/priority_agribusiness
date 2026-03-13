@@ -143,6 +143,27 @@ class PriorityBankApiClient
         return null;
     }
 
+    /**
+     * Fetch account balance from Priority Bank (central-finance/balance).
+     */
+    public function getBalance(): ?array
+    {
+        $url = rtrim($this->baseUrl, '/') . '/api/central-finance/balance';
+        try {
+            $headers = ['Accept' => 'application/json'];
+            if ($this->apiToken) {
+                $headers['Authorization'] = 'Bearer ' . $this->apiToken;
+            }
+            $response = Http::timeout($this->timeout)->withHeaders($headers)->get($url);
+            if ($response->successful()) {
+                return $response->json();
+            }
+        } catch (\Exception $e) {
+            Log::warning('Priority Bank getBalance failed', ['error' => $e->getMessage()]);
+        }
+        return null;
+    }
+
     protected function generateIdempotencyKey(string $systemId, string $externalTransactionId): string
     {
         return hash('sha256', "{$systemId}:{$externalTransactionId}");

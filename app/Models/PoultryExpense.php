@@ -18,6 +18,7 @@ class PoultryExpense extends Model
         'amount',
         'date',
         'description',
+        'external_transaction_id',
     ];
 
     protected $casts = [

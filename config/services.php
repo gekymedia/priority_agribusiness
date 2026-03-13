@@ -14,6 +14,7 @@ return [
     'priority_bank' => [
         'api_url' => env('PRIORITY_BANK_API_URL', 'https://prioritybank.gekymedia.com'),
         'api_token' => env('PRIORITY_BANK_API_TOKEN'),
+        'system_id' => env('PRIORITY_BANK_SYSTEM_ID', 'priority_agriculture'),
         'timeout' => env('PRIORITY_BANK_API_TIMEOUT', 10),
         'max_retries' => env('PRIORITY_BANK_API_MAX_RETRIES', 3),
     ],

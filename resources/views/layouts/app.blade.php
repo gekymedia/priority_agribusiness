@@ -758,9 +758,21 @@
                 </a>
             </div>
             <div class="sidebar-menu-item">
-                <a href="{{ route('expenses.index') }}" class="sidebar-link {{ request()->routeIs('expenses.*') ? 'active' : '' }}">
+                <a href="{{ route('expenses.index') }}" class="sidebar-link {{ request()->routeIs('expenses.*') && !request()->routeIs('finance.*') ? 'active' : '' }}">
                     <i class="fas fa-money-bill-wave"></i>
                     <span>Expenses</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="{{ route('finance.income.index') }}" class="sidebar-link {{ request()->routeIs('finance.income.*') ? 'active' : '' }}">
+                    <i class="fas fa-arrow-down-to-line"></i>
+                    <span>Income</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="{{ route('finance.expenditure.index') }}" class="sidebar-link {{ request()->routeIs('finance.expenditure.*') ? 'active' : '' }}">
+                    <i class="fas fa-arrow-up-from-line"></i>
+                    <span>Expenditure (Bank)</span>
                 </a>
             </div>
             <div class="sidebar-menu-item">
@@ -815,6 +827,22 @@
                 <a href="{{ route('payroll.index') }}" class="sidebar-link {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
                     <i class="fas fa-money-check-alt"></i>
                     <span>Payroll</span>
+                </a>
+            </div>
+            {{-- Settings group --}}
+            <div class="sidebar-menu-item" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(46, 125, 50, 0.1);">
+                <div class="px-3 py-1 small text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px;">Settings</div>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="{{ route('settings.index') }}" class="sidebar-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                    <i class="fas fa-cog"></i>
+                    <span>System Settings</span>
+                </a>
+            </div>
+            <div class="sidebar-menu-item">
+                <a href="{{ route('logs.index') }}" class="sidebar-link {{ request()->routeIs('logs.*') ? 'active' : '' }}">
+                    <i class="fas fa-file-alt"></i>
+                    <span>System Logs</span>
                 </a>
             </div>
             @endif
@@ -961,6 +989,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @stack('scripts')
     <script>
         // Mobile menu toggle
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');

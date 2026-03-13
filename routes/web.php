@@ -27,6 +27,8 @@ use App\Http\Controllers\BirdMortalityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EggStoreController;
 use App\Http\Controllers\PaymentSettingsController;
+use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\LogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -95,6 +97,20 @@ Route::middleware('auth.users')->group(function () {
     Route::resource('expenses', ExpenseController::class);
     Route::resource('expense-categories', ExpenseCategoryController::class)->except(['show']);
 
+    // Account & Finance (Income, Expenditure, bank sync)
+    Route::prefix('finance')->name('finance.')->group(function () {
+        Route::prefix('income')->name('income.')->group(function () {
+            Route::get('/', [FinanceController::class, 'incomeIndex'])->name('index');
+            Route::get('/create', [FinanceController::class, 'incomeCreate'])->name('create');
+            Route::post('/', [FinanceController::class, 'incomeStore'])->name('store');
+            Route::post('/{income}/sync', [FinanceController::class, 'incomeSync'])->name('sync');
+        });
+        Route::prefix('expenditure')->name('expenditure.')->group(function () {
+            Route::get('/', [FinanceController::class, 'expenditureIndex'])->name('index');
+            Route::post('/{expense}/sync', [FinanceController::class, 'expenditureSync'])->name('sync');
+        });
+    });
+
     // Profile Settings
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -146,6 +162,17 @@ Route::middleware('auth.users')->group(function () {
     Route::post('/settings/test-notification', [SettingsController::class, 'testNotification'])->name('settings.test-notification');
     Route::post('/settings/clear-cache', [SettingsController::class, 'clearCache'])->name('settings.clear-cache');
     Route::post('/settings/notification-settings', [SettingsController::class, 'updateNotificationSettings'])->name('settings.notification-settings');
+    Route::put('/settings/priority-bank', [SettingsController::class, 'updatePriorityBank'])->name('settings.priority-bank.update');
     Route::get('/payment-settings', [PaymentSettingsController::class, 'index'])->name('payment-settings.index');
     Route::put('/payment-settings', [PaymentSettingsController::class, 'update'])->name('payment-settings.update');
+
+    // System Logs (Laravel log files)
+    Route::prefix('logs')->name('logs.')->group(function () {
+        Route::get('/', [LogController::class, 'index'])->name('index');
+        Route::post('/refresh', [LogController::class, 'refresh'])->name('refresh');
+        Route::post('/clear', [LogController::class, 'clear'])->name('clear');
+        Route::post('/clear-all', [LogController::class, 'clearAll'])->name('clear-all');
+        Route::get('/download', [LogController::class, 'download'])->name('download');
+        Route::get('/download-all', [LogController::class, 'downloadAll'])->name('download-all');
+    });
 });

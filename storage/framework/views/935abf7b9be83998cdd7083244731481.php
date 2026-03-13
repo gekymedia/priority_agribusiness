@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo e(config('app.name')); ?> - <?php echo $__env->yieldContent('title', 'Welcome'); ?></title>
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="<?php echo e(asset('manifest.json')); ?>">
-    <meta name="theme-color" content="#2e7d32">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    
     <!-- Favicons -->
     <link rel="icon" type="image/png" sizes="16x16" href="<?php echo e(asset('favicon/priority_agriculture_16x16.png')); ?>">
     <link rel="icon" type="image/png" sizes="32x32" href="<?php echo e(asset('favicon/priority_agriculture_32x32.png')); ?>">
@@ -535,6 +529,11 @@
                         <?php echo $__env->yieldContent('auth-content'); ?>
 
                         <div class="auth-footer">
+                            <?php if(request()->routeIs('store.*')): ?>
+                                <a href="<?php echo e(route('login')); ?>" class="btn btn-link btn-sm text-muted mb-2">Staff login</a>
+                            <?php else: ?>
+                                <a href="<?php echo e(route('store.index')); ?>" class="btn btn-outline-primary btn-sm mb-2"><i class="fas fa-egg me-1"></i> Buy eggs</a>
+                            <?php endif; ?>
                             <p>&copy; <?php echo e(date('Y')); ?> <?php echo e(config('app.name')); ?>. All rights reserved.</p>
                         </div>
                     </div>
