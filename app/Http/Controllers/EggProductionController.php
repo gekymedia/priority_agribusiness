@@ -134,6 +134,15 @@ class EggProductionController extends Controller
         return view('egg-productions.index', compact('productions'));
     }
 
+    /**
+     * Return all egg production records as JSON for "Show all" (jQuery fetch).
+     */
+    public function data()
+    {
+        $productions = EggProduction::with('birdBatch.farm')->latest('date')->get();
+        return response()->json($productions);
+    }
+
     public function create()
     {
         $batches = BirdBatch::whereIn('purpose', ['egg_production', 'layer'])

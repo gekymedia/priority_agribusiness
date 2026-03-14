@@ -87,6 +87,7 @@ Route::middleware('auth.users')->group(function () {
     // Egg Production & Sales
     Route::get('egg-productions/bulk-import', [EggProductionController::class, 'bulkImport'])->name('egg-productions.bulk-import');
     Route::post('egg-productions/bulk-import', [EggProductionController::class, 'processBulkImport'])->name('egg-productions.bulk-import.process');
+    Route::get('egg-productions/data', [EggProductionController::class, 'data'])->name('egg-productions.data');
     Route::resource('egg-productions', EggProductionController::class);
     Route::resource('egg-sales', EggSaleController::class);
     Route::post('egg-sales/online-orders/{market_order}/complete', [EggSaleController::class, 'markOrderComplete'])->name('egg-sales.online-orders.complete');
@@ -94,6 +95,8 @@ Route::middleware('auth.users')->group(function () {
     Route::resource('bird-mortality', BirdMortalityController::class)->except(['show']);
 
     // Expenses
+    Route::get('expenses/bulk-add', [ExpenseController::class, 'bulkAdd'])->name('expenses.bulk-add');
+    Route::post('expenses/bulk-add', [ExpenseController::class, 'storeBulk'])->name('expenses.bulk-add.store');
     Route::resource('expenses', ExpenseController::class);
     Route::resource('expense-categories', ExpenseCategoryController::class)->except(['show']);
 

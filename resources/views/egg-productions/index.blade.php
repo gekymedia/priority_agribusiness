@@ -35,9 +35,9 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="egg-productions-tbody">
                     @forelse($productions as $production)
-                    <tr>
+                    <tr data-id="{{ $production->id }}">
                         <td>{{ $production->date->format('M d, Y') }}</td>
                         <td>{{ $production->birdBatch->batch_code ?? 'N/A' }}</td>
                         <td>{{ $production->birdBatch->farm->name ?? 'N/A' }}</td>
@@ -66,7 +66,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr>
+                    <tr id="egg-productions-empty">
                         <td colspan="8" class="text-center py-5">
                             <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                             <p class="text-muted">No egg production records found</p>
@@ -80,11 +80,84 @@
             </table>
         </div>
 
-        @if($productions->hasPages())
-        <div class="mt-4">
-            {{ $productions->links() }}
+        <div class="mt-4 d-flex flex-wrap align-items-center gap-2" id="egg-productions-footer">
+            @if($productions->hasPages())
+            <div>{{ $productions->links() }}</div>
+            <div class="ms-2">
+                <button type="button" class="btn btn-outline-primary" id="egg-productions-show-all" title="Load all records into this page">
+                    <i class="fas fa-list me-2"></i>Show all
+                </button>
+            </div>
+            @endif
         </div>
-        @endif
     </div>
 </div>
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+<script>
+(function() {
+    var dataUrl = @json(route('egg-productions.data'));
+    var baseUrl = @json(url('egg-productions'));
+    var destroyUrl = baseUrl + '/';
+    var csrfToken = @json(csrf_token());
+
+    function formatDate(dateStr) {
+        if (!dateStr) return 'N/A';
+        var d = new Date(dateStr);
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+    }
+
+    function formatNum(n) { return Number(n).toLocaleString(); }
+
+    function buildRow(p) {
+        var batchCode = (p.bird_batch && p.bird_batch.batch_code) ? p.bird_batch.batch_code : 'N/A';
+        var farmName = (p.bird_batch && p.bird_batch.farm && p.bird_batch.farm.name) ? p.bird_batch.farm.name : 'N/A';
+        var available = (p.eggs_collected || 0) - (p.cracked_or_damaged || 0) - (p.eggs_used_internal || 0);
+        var showUrl = baseUrl + '/' + p.id;
+        var editUrl = baseUrl + '/' + p.id + '/edit';
+        var delUrl = destroyUrl + p.id;
+        return '<tr data-id="' + p.id + '">' +
+            '<td>' + formatDate(p.date) + '</td>' +
+            '<td>' + batchCode + '</td>' +
+            '<td>' + farmName + '</td>' +
+            '<td><strong>' + formatNum(p.eggs_collected) + '</strong></td>' +
+            '<td>' + formatNum(p.cracked_or_damaged) + '</td>' +
+            '<td>' + formatNum(p.eggs_used_internal) + '</td>' +
+            '<td><span class="badge bg-success">' + formatNum(available) + '</span></td>' +
+            '<td>' +
+                '<a href="' + showUrl + '" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a> ' +
+                '<a href="' + editUrl + '" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a> ' +
+                '<form action="' + delUrl + '" method="POST" class="d-inline" onsubmit="return confirm(\'Delete this record?\');">' +
+                    '<input type="hidden" name="_token" value="' + csrfToken + '">' +
+                    '<input type="hidden" name="_method" value="DELETE">' +
+                    '<button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>' +
+                '</form>' +
+            '</td></tr>';
+    }
+
+    $('#egg-productions-show-all').on('click', function() {
+        var $btn = $(this);
+        var $footer = $('#egg-productions-footer');
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Loading…');
+
+        $.getJSON(dataUrl)
+            .done(function(data) {
+                var $tbody = $('#egg-productions-tbody');
+                $('#egg-productions-empty').remove();
+                if (Array.isArray(data) && data.length > 0) {
+                    var html = data.map(buildRow).join('');
+                    $tbody.html(html);
+                }
+                $footer.addClass('d-none');
+            })
+            .fail(function() {
+                $btn.prop('disabled', false).html('<i class="fas fa-list me-2"></i>Show all');
+                alert('Failed to load records. Please try again.');
+            });
+    });
+})();
+</script>
+@endpush
 @endsection

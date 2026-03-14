@@ -13,6 +13,9 @@
         <a href="{{ route('expenses.create') }}" class="btn btn-primary me-2">
             <i class="fas fa-plus me-2"></i>Add Expense
         </a>
+        <a href="{{ route('expenses.bulk-add') }}" class="btn btn-outline-primary me-2">
+            <i class="fas fa-file-import me-2"></i>Bulk Add Expenses
+        </a>
         <a href="{{ route('expense-categories.index') }}" class="btn btn-outline-primary">
             <i class="fas fa-tags me-2"></i>Manage Categories
         </a>
