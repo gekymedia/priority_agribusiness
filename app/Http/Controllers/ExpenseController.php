@@ -58,7 +58,7 @@ class ExpenseController extends Controller
             return redirect()
                 ->route('expenses.bulk-add')
                 ->withInput()
-                ->with('error', 'No valid expense lines found. Use one line per expense: date (or —), description, amount. Tab or comma separated. First line can be a header.');
+                ->with('error', 'No valid expense lines found. Use bracket format [date, description, amount, category] or tab/comma lines: date (or —), description, amount.');
         }
 
         $farmId = (int) $data['farm_id'];
@@ -107,11 +107,88 @@ class ExpenseController extends Controller
     }
 
     /**
-     * Parse pasted bulk expense text into rows.
-     * Format: one line per expense. Columns: date (or —), description, amount [, category_name].
-     * Separator: tab or comma. First line is skipped if it looks like a header.
+     * Parse pasted bulk expense text: supports bracket format [date, description, amount, category]
+     * and tab/comma-separated lines. Returns array of rows for create.
      */
     protected function parseBulkExpenseText(string $text, string $defaultDate, int $defaultCategoryId, $categories): array
+    {
+        $bracketRows = $this->parseBulkExpenseBracketFormat($text, $defaultDate, $defaultCategoryId, $categories);
+        if (! empty($bracketRows)) {
+            return $bracketRows;
+        }
+        return $this->parseBulkExpenseLineFormat($text, $defaultDate, $defaultCategoryId, $categories);
+    }
+
+    /**
+     * Bracket format: each [date, description, amount, category] = one expense row.
+     */
+    protected function parseBulkExpenseBracketFormat(string $text, string $defaultDate, int $defaultCategoryId, $categories): array
+    {
+        if (! preg_match_all('/\[([^\]]*)\]/', $text, $matches)) {
+            return [];
+        }
+        $categoryByName = $categories->keyBy(fn ($c) => strtolower($c->name));
+        $defaultDateFormatted = Carbon::parse($defaultDate)->format('Y-m-d');
+        $result = [];
+
+        foreach ($matches[1] as $inner) {
+            $parts = array_map('trim', explode(',', $inner));
+            if (count($parts) < 3) {
+                continue;
+            }
+            $dateRaw = $parts[0];
+            if (count($parts) === 3) {
+                $description = $parts[1];
+                $amountRaw = $parts[2];
+                $categoryName = null;
+            } else {
+                $categoryName = trim($parts[count($parts) - 1]);
+                $amountRaw = trim($parts[count($parts) - 2]);
+                $description = trim(implode(',', array_slice($parts, 1, count($parts) - 3)));
+            }
+
+            if ($description === '' || $amountRaw === '') {
+                continue;
+            }
+
+            $amount = $this->parseAmount($amountRaw);
+            if ($amount === null) {
+                continue;
+            }
+
+            if ($this->isDefaultDatePlaceholder($dateRaw)) {
+                $date = $defaultDateFormatted;
+            } else {
+                try {
+                    $date = Carbon::parse($dateRaw)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $date = $defaultDateFormatted;
+                }
+            }
+
+            $categoryId = $defaultCategoryId;
+            if ($categoryName !== null && $categoryName !== '') {
+                $found = $categoryByName->get(strtolower($categoryName));
+                if ($found) {
+                    $categoryId = $found->id;
+                }
+            }
+
+            $result[] = [
+                'date' => $date,
+                'description' => $description,
+                'amount' => $amount,
+                'category_id' => $categoryId,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Tab/comma line format: one line per expense. First line can be header.
+     */
+    protected function parseBulkExpenseLineFormat(string $text, string $defaultDate, int $defaultCategoryId, $categories): array
     {
         $lines = array_filter(array_map('trim', explode("\n", $text)));
         $categoryByName = $categories->keyBy(fn ($c) => strtolower($c->name));

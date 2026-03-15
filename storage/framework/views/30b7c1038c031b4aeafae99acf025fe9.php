@@ -11,6 +11,9 @@
         <a href="<?php echo e(route('expenses.create')); ?>" class="btn btn-primary me-2">
             <i class="fas fa-plus me-2"></i>Add Expense
         </a>
+        <a href="<?php echo e(route('expenses.bulk-add')); ?>" class="btn btn-outline-primary me-2">
+            <i class="fas fa-file-import me-2"></i>Bulk Add Expenses
+        </a>
         <a href="<?php echo e(route('expense-categories.index')); ?>" class="btn btn-outline-primary">
             <i class="fas fa-tags me-2"></i>Manage Categories
         </a>
@@ -40,7 +43,7 @@
                         <td><?php echo e($expense->birdBatch->batch_code ?? 'General'); ?></td>
                         <td>
                             <span class="badge bg-primary bg-opacity-10 text-primary">
-                                <?php echo e($expense->category->name ?? $expense->category ?? 'N/A'); ?>
+                                <?php echo e($expense->category?->name ?? 'Uncategorized'); ?>
 
                             </span>
                         </td>

@@ -5,7 +5,7 @@
 @section('content')
 <div class="page-header">
     <h1 class="page-title">Bulk Import Egg Production</h1>
-    <p class="page-subtitle">Paste daily egg counts from your caretaker (one line per day, e.g. "19th January 0 eggs")</p>
+    <p class="page-subtitle">Paste daily egg counts. Use bracket format: one <code>[date, eggs_collected, cracked_or_damaged, notes]</code> per row.</p>
 </div>
 
 @if(session('error'))
@@ -59,11 +59,11 @@
                     <label for="pasted_data" class="form-label">
                         <i class="fas fa-paste me-2"></i>Paste daily production (one line per day)
                     </label>
-                    <textarea name="pasted_data" id="pasted_data" class="form-control font-monospace @error('pasted_data') is-invalid @enderror" rows="14" placeholder="19th January 0 eggs&#10;20th January 0 eggs&#10;22nd January 3 eggs&#10;23rd January 1 damage egg&#10;...">{{ old('pasted_data') }}</textarea>
+                    <textarea name="pasted_data" id="pasted_data" class="form-control font-monospace @error('pasted_data') is-invalid @enderror" rows="14" placeholder="[19th January, 0, 0]&#10;[20th January, 5, 3]&#10;[21st January, 50, 3, used internally]&#10;[22nd January, 42, 1, broken during packing]">{{ old('pasted_data') }}</textarea>
                     @error('pasted_data')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <small class="text-muted">Supported: "X eggs", "X egg", "1 damage egg", "crack 1 egg", "7 eggs 1 broken". Dates already in the system for this batch are skipped.</small>
+                    <small class="text-muted">Bracket format: <code>[date, eggs_collected, cracked_or_damaged, notes]</code>. Notes optional. Also supported: caretaker lines like "19th January 0 eggs". Dates already in the system for this batch are skipped.</small>
                 </div>
             </div>
 

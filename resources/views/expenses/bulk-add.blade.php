@@ -5,7 +5,7 @@
 @section('content')
 <div class="page-header">
     <h1 class="page-title">Bulk Add Expenses</h1>
-    <p class="page-subtitle">Paste expense lines from your ledger; one line per expense (date, description, amount). Use defaults below for farm, category, and batch.</p>
+    <p class="page-subtitle">Paste expense lines. Use bracket format: one <code>[date, description, amount, category]</code> per row, or tab/comma-separated lines.</p>
 </div>
 
 @if(session('error'))
@@ -95,14 +95,13 @@
                     <label for="pasted_data" class="form-label">
                         <i class="fas fa-paste me-2"></i>Paste expense lines (one per row)
                     </label>
-                    <textarea name="pasted_data" id="pasted_data" class="form-control font-monospace @error('pasted_data') is-invalid @enderror" rows="16" placeholder="21 Jan	Transportation of water gallons	70&#10;—	Bending wire	60&#10;—	Chicken feed	260&#10;—	Feed	260">{{ old('pasted_data') }}</textarea>
+                    <textarea name="pasted_data" id="pasted_data" class="form-control font-monospace @error('pasted_data') is-invalid @enderror" rows="16" placeholder="[21 Jan, Transportation of water gallons, 70, Logistics]&#10;[21 Jan, Bending wire, 60, Repairs]&#10;[21 Jan, Chicken feed, 260, Feed]&#10;[-, Feed, 260, Feed]">{{ old('pasted_data') }}</textarea>
                     @error('pasted_data')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                     <div class="mt-2 small text-muted">
-                        <strong>Format:</strong> One line per expense. Columns separated by <strong>tab</strong> or <strong>comma</strong>:<br>
-                        <code>date</code> (or — for default date) · <code>description</code> · <code>amount</code> · <code>category</code> (optional)<br>
-                        Paste from a spreadsheet or use an AI to convert your ledger: see <code>docs/BULK_EXPENSES_AI_PROMPT.md</code> for a ready-to-use prompt. First line can be a header and will be skipped.
+                        <strong>Bracket format:</strong> One <code>[date, description, amount, category]</code> per row. Use <code>-</code> or <code>—</code> for date to use default. Category optional.<br>
+                        <strong>Or</strong> tab/comma lines: <code>date</code> · <code>description</code> · <code>amount</code> · <code>category</code> (optional). First line can be a header.
                     </div>
                 </div>
             </div>

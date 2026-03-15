@@ -11,10 +11,88 @@ use Illuminate\Http\Request;
 class EggProductionController extends Controller
 {
     /**
-     * Parse caretaker-style text (e.g. "19th January 0 eggs") into structured rows.
-     * Returns array of ['date' => Y-m-d, 'eggs_collected' => int, 'cracked_or_damaged' => int, 'notes' => string]
+     * Parse bulk import text: supports bracket format [date, eggs_collected, cracked_or_damaged, notes]
+     * and caretaker-style lines (e.g. "19th January 0 eggs"). Returns array of rows for DB insert.
      */
     protected function parseBulkImportText(string $text, int $defaultYear): array
+    {
+        $bracketRows = $this->parseBulkImportBracketFormat($text, $defaultYear);
+        if (! empty($bracketRows)) {
+            return $bracketRows;
+        }
+        return $this->parseBulkImportCaretakerFormat($text, $defaultYear);
+    }
+
+    /**
+     * Bracket format: each [date, eggs_collected, cracked_or_damaged, notes] = one row.
+     */
+    protected function parseBulkImportBracketFormat(string $text, int $defaultYear): array
+    {
+        if (! preg_match_all('/\[([^\]]*)\]/', $text, $matches)) {
+            return [];
+        }
+        $months = [
+            'january' => 1, 'february' => 2, 'march' => 3, 'april' => 4, 'may' => 5, 'june' => 6,
+            'july' => 7, 'august' => 8, 'september' => 9, 'october' => 10, 'november' => 11, 'december' => 12,
+        ];
+        $rows = [];
+        foreach ($matches[1] as $inner) {
+            $parts = array_map('trim', explode(',', $inner));
+            if (count($parts) < 3) {
+                continue;
+            }
+            $dateStr = $parts[0];
+            $eggsCollectedRaw = $parts[1];
+            $crackedRaw = $parts[2];
+            $notes = count($parts) > 3 ? trim(implode(',', array_slice($parts, 3))) : null;
+            if ($notes === '') {
+                $notes = null;
+            }
+
+            if (! ctype_digit(trim($eggsCollectedRaw)) && ! is_numeric(trim($eggsCollectedRaw))) {
+                continue;
+            }
+            $eggsCollected = (int) $eggsCollectedRaw;
+            $crackedOrDamaged = is_numeric(trim($crackedRaw)) ? (int) $crackedRaw : 0;
+
+            $date = $this->parseEggDateString($dateStr, $defaultYear, $months);
+            if ($date === null) {
+                continue;
+            }
+            $rows[] = [
+                'date' => $date,
+                'eggs_collected' => $eggsCollected,
+                'cracked_or_damaged' => $crackedOrDamaged,
+                'eggs_used_internal' => 0,
+                'notes' => $notes,
+            ];
+        }
+        return $rows;
+    }
+
+    /**
+     * Parse date string like "19th January" or "19th January 2024" to Y-m-d.
+     */
+    protected function parseEggDateString(string $dateStr, int $defaultYear, array $months): ?string
+    {
+        $monthPattern = implode('|', array_keys($months));
+        if (! preg_match('/^(\d{1,2})(?:st|nd|rd|th)?\s+(' . $monthPattern . ')(?:\s+(\d{4}))?/si', trim($dateStr), $m)) {
+            return null;
+        }
+        $day = (int) $m[1];
+        $month = $months[strtolower($m[2])];
+        $year = ! empty($m[3]) ? (int) $m[3] : $defaultYear;
+        try {
+            return Carbon::createFromDate($year, $month, $day)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Caretaker-style: e.g. "19th January 0 eggs" into structured rows.
+     */
+    protected function parseBulkImportCaretakerFormat(string $text, int $defaultYear): array
     {
         $months = [
             'january' => 1, 'february' => 2, 'march' => 3, 'april' => 4, 'may' => 5, 'june' => 6,
@@ -40,7 +118,6 @@ class EggProductionController extends Controller
 
                 $collected = 0;
                 $damaged = 0;
-                $restLower = strtolower($rest);
 
                 // "X eggs 1 broken" or "7 eggs 1 broken"
                 if (preg_match('/^(\d+)\s*eggs?\s+(\d+)\s*(?:broken|damage|crack)/i', $rest, $nm)) {
@@ -93,7 +170,7 @@ class EggProductionController extends Controller
         if (empty($parsed)) {
             return redirect()->route('egg-productions.bulk-import')
                 ->withInput()
-                ->with('error', 'No valid date lines found. Use lines like "19th January 0 eggs" or "22nd January 3 eggs".');
+                ->with('error', 'No valid rows found. Use bracket format [date, eggs_collected, cracked_or_damaged, notes] or lines like "19th January 0 eggs".');
         }
         $batchId = (int) $data['bird_batch_id'];
         $existingDates = EggProduction::where('bird_batch_id', $batchId)
