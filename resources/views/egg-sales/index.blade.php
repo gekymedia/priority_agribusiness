@@ -10,6 +10,10 @@
 
 @php
     $activeTab = request('tab', 'recorded');
+    $sort = $sort ?? 'date';
+    $direction = $direction ?? 'desc';
+    $onlineSort = $onlineSort ?? 'created_at';
+    $onlineDir = $onlineDir ?? 'desc';
 @endphp
 
 <ul class="nav nav-tabs mb-4" role="tablist">
@@ -40,14 +44,18 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Batch</th>
-                        <th>Farm</th>
-                        <th>Quantity</th>
+                        @php
+                            $sortUrl = fn ($col) => request()->fullUrlWithQuery(['sort' => $col, 'direction' => ($sort === $col && $direction === 'asc') ? 'desc' : 'asc', 'page' => null]);
+                            $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+                        @endphp
+                        <th><a href="{{ $sortUrl('date') }}" class="text-decoration-none text-dark">Date</a><i class="fas{{ $sortIcon('date') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('batch') }}" class="text-decoration-none text-dark">Batch</a><i class="fas{{ $sortIcon('batch') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('farm') }}" class="text-decoration-none text-dark">Farm</a><i class="fas{{ $sortIcon('farm') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('quantity_sold') }}" class="text-decoration-none text-dark">Quantity</a><i class="fas{{ $sortIcon('quantity_sold') }} ms-1"></i></th>
                         <th>Unit</th>
-                        <th>Price/Unit</th>
+                        <th><a href="{{ $sortUrl('price_per_unit') }}" class="text-decoration-none text-dark">Price/Unit</a><i class="fas{{ $sortIcon('price_per_unit') }} ms-1"></i></th>
                         <th>Total Amount</th>
-                        <th>Buyer</th>
+                        <th><a href="{{ $sortUrl('buyer_name') }}" class="text-decoration-none text-dark">Buyer</a><i class="fas{{ $sortIcon('buyer_name') }} ms-1"></i></th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -113,13 +121,18 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Order #</th>
-                        <th>Date</th>
-                        <th>Customer</th>
+                        @php
+                            $oq = request()->except('online_page');
+                            $onlineSortUrl = fn ($col) => request()->fullUrlWithQuery(array_merge($oq, ['online_sort' => $col, 'online_direction' => ($onlineSort === $col && $onlineDir === 'asc') ? 'desc' : 'asc', 'online_page' => null]));
+                            $onlineSortIcon = fn ($col) => $onlineSort === $col ? ($onlineDir === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+                        @endphp
+                        <th><a href="{{ $onlineSortUrl('order_number') }}" class="text-decoration-none text-dark">Order #</a><i class="fas{{ $onlineSortIcon('order_number') }} ms-1"></i></th>
+                        <th><a href="{{ $onlineSortUrl('created_at') }}" class="text-decoration-none text-dark">Date</a><i class="fas{{ $onlineSortIcon('created_at') }} ms-1"></i></th>
+                        <th><a href="{{ $onlineSortUrl('customer_name') }}" class="text-decoration-none text-dark">Customer</a><i class="fas{{ $onlineSortIcon('customer_name') }} ms-1"></i></th>
                         <th>Contact</th>
                         <th>Items</th>
-                        <th>Total</th>
-                        <th>Status</th>
+                        <th><a href="{{ $onlineSortUrl('total_amount') }}" class="text-decoration-none text-dark">Total</a><i class="fas{{ $onlineSortIcon('total_amount') }} ms-1"></i></th>
+                        <th><a href="{{ $onlineSortUrl('status') }}" class="text-decoration-none text-dark">Status</a><i class="fas{{ $onlineSortIcon('status') }} ms-1"></i></th>
                         <th>Actions</th>
                     </tr>
                 </thead>

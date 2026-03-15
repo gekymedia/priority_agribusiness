@@ -13,12 +13,46 @@ use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $expenses = PoultryExpense::with(['farm', 'birdBatch', 'category'])
-            ->latest('date')
-            ->paginate(15);
-        return view('expenses.index', compact('expenses'));
+        $sort = $request->query('sort', 'date');
+        $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = ['date', 'farm', 'batch', 'category', 'description', 'amount'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'date';
+        }
+
+        $query = PoultryExpense::query()->with(['farm', 'birdBatch', 'category']);
+
+        switch ($sort) {
+            case 'date':
+                $query->orderBy('date', $direction);
+                break;
+            case 'amount':
+                $query->orderBy('amount', $direction);
+                break;
+            case 'description':
+                $query->orderBy('description', $direction);
+                break;
+            case 'farm':
+                $query->leftJoin('farms', 'poultry_expenses.farm_id', '=', 'farms.id')
+                    ->select('poultry_expenses.*')
+                    ->orderBy('farms.name', $direction);
+                break;
+            case 'batch':
+                $query->leftJoin('bird_batches', 'poultry_expenses.bird_batch_id', '=', 'bird_batches.id')
+                    ->select('poultry_expenses.*')
+                    ->orderBy('bird_batches.batch_code', $direction);
+                break;
+            case 'category':
+                $query->leftJoin('expense_categories', 'poultry_expenses.category_id', '=', 'expense_categories.id')
+                    ->select('poultry_expenses.*')
+                    ->orderBy('expense_categories.name', $direction);
+                break;
+        }
+
+        $expenses = $query->paginate(50)->withQueryString();
+        return view('expenses.index', compact('expenses', 'sort', 'direction'));
     }
 
     public function create()

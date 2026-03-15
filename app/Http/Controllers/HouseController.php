@@ -8,10 +8,25 @@ use Illuminate\Http\Request;
 
 class HouseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $houses = House::with('farm')->paginate(15);
-        return view('houses.index', compact('houses'));
+        $sort = $request->query('sort', 'name');
+        $direction = strtolower($request->query('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $allowedSorts = ['name', 'farm', 'capacity', 'type'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'name';
+        }
+
+        $query = House::query()->with('farm');
+        if ($sort === 'farm') {
+            $query->leftJoin('farms', 'houses.farm_id', '=', 'farms.id')
+                ->select('houses.*')
+                ->orderBy('farms.name', $direction);
+        } else {
+            $query->orderBy('houses.' . $sort, $direction);
+        }
+        $houses = $query->paginate(50)->withQueryString();
+        return view('houses.index', compact('houses', 'sort', 'direction'));
     }
 
     public function create()

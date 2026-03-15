@@ -27,10 +27,31 @@ class TaskController extends Controller
             $query->where('assigned_to', $user->id);
         }
         
-        $tasks = $query->orderBy('due_date')->paginate(15);
+        $sort = $request->query('sort', 'due_date');
+        $direction = strtolower($request->query('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $allowedSorts = ['title', 'due_date', 'status', 'priority', 'assigned_to'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'due_date';
+        }
+
+        switch ($sort) {
+            case 'title':
+            case 'due_date':
+            case 'status':
+            case 'priority':
+                $query->orderBy('tasks.' . $sort, $direction);
+                break;
+            case 'assigned_to':
+                $query->leftJoin('employees', 'tasks.assigned_to', '=', 'employees.id')
+                    ->select('tasks.*')
+                    ->orderBy('employees.first_name', $direction);
+                break;
+        }
+
+        $tasks = $query->paginate(50)->withQueryString();
         $employees = \App\Models\Employee::approved()->where('is_active', true)->orderBy('first_name')->get();
-        
-        return view('tasks.index', compact('tasks', 'employees'));
+
+        return view('tasks.index', compact('tasks', 'employees', 'sort', 'direction'));
     }
 
     /**

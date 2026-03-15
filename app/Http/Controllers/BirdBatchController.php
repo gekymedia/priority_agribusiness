@@ -11,10 +11,37 @@ use Illuminate\Http\Request;
 
 class BirdBatchController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $batches = BirdBatch::with(['farm', 'house'])->paginate(15);
-        return view('batches.index', compact('batches'));
+        $sort = $request->query('sort', 'batch_code');
+        $direction = strtolower($request->query('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $allowedSorts = ['batch_code', 'farm', 'house', 'purpose', 'arrival_date', 'quantity_arrived', 'status'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'batch_code';
+        }
+
+        $query = BirdBatch::query()->with(['farm', 'house']);
+        switch ($sort) {
+            case 'batch_code':
+            case 'purpose':
+            case 'arrival_date':
+            case 'quantity_arrived':
+            case 'status':
+                $query->orderBy('bird_batches.' . $sort, $direction);
+                break;
+            case 'farm':
+                $query->leftJoin('farms', 'bird_batches.farm_id', '=', 'farms.id')
+                    ->select('bird_batches.*')
+                    ->orderBy('farms.name', $direction);
+                break;
+            case 'house':
+                $query->leftJoin('houses', 'bird_batches.house_id', '=', 'houses.id')
+                    ->select('bird_batches.*')
+                    ->orderBy('houses.name', $direction);
+                break;
+        }
+        $batches = $query->paginate(50)->withQueryString();
+        return view('batches.index', compact('batches', 'sort', 'direction'));
     }
 
     public function create()

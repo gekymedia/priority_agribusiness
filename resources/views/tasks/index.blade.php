@@ -3,6 +3,10 @@
 @section('title', 'Tasks')
 
 @section('content')
+@php
+    $sort = $sort ?? 'due_date';
+    $direction = $direction ?? 'asc';
+@endphp
 <div class="page-header">
     <h1 class="page-title">Tasks & Reminders</h1>
     <p class="page-subtitle">Manage your agricultural tasks and reminders</p>
@@ -36,11 +40,15 @@
             <table class="table table-hover">
     <thead>
         <tr>
-            <th>Title</th>
-            <th>Assigned To</th>
-            <th>Due Date</th>
-            <th>Status</th>
-            <th>Priority</th>
+            @php
+                $sortUrl = fn ($col) => request()->fullUrlWithQuery(array_merge(request()->only(['assigned_to']), ['sort' => $col, 'direction' => ($sort === $col && $direction === 'asc') ? 'desc' : 'asc', 'page' => null]));
+                $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+            @endphp
+            <th><a href="{{ $sortUrl('title') }}" class="text-decoration-none text-dark">Title</a><i class="fas{{ $sortIcon('title') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('assigned_to') }}" class="text-decoration-none text-dark">Assigned To</a><i class="fas{{ $sortIcon('assigned_to') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('due_date') }}" class="text-decoration-none text-dark">Due Date</a><i class="fas{{ $sortIcon('due_date') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('status') }}" class="text-decoration-none text-dark">Status</a><i class="fas{{ $sortIcon('status') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('priority') }}" class="text-decoration-none text-dark">Priority</a><i class="fas{{ $sortIcon('priority') }} ms-1"></i></th>
             <th>Actions</th>
         </tr>
     </thead>

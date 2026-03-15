@@ -14,12 +14,50 @@ class EggSaleController extends Controller
 {
     public function index(Request $request)
     {
-        $sales = EggSale::with('birdBatch.farm')->latest('date')->paginate(15)->withQueryString();
-        $onlineOrders = MarketOrder::with('items')->latest()->paginate(15, ['*'], 'online_page')->withQueryString();
+        $sort = $request->query('sort', 'date');
+        $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = ['date', 'batch', 'farm', 'quantity_sold', 'price_per_unit', 'buyer_name'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'date';
+        }
+
+        $salesQuery = EggSale::query()->with('birdBatch.farm');
+        switch ($sort) {
+            case 'date':
+                $salesQuery->orderBy('date', $direction);
+                break;
+            case 'quantity_sold':
+            case 'price_per_unit':
+            case 'buyer_name':
+                $salesQuery->orderBy($sort, $direction);
+                break;
+            case 'batch':
+                $salesQuery->leftJoin('bird_batches', 'egg_sales.bird_batch_id', '=', 'bird_batches.id')
+                    ->select('egg_sales.*')
+                    ->orderBy('bird_batches.batch_code', $direction);
+                break;
+            case 'farm':
+                $salesQuery->leftJoin('bird_batches as bb', 'egg_sales.bird_batch_id', '=', 'bb.id')
+                    ->leftJoin('farms', 'bb.farm_id', '=', 'farms.id')
+                    ->select('egg_sales.*')
+                    ->orderBy('farms.name', $direction);
+                break;
+        }
+        $sales = $salesQuery->paginate(50)->withQueryString();
+
+        $onlineSort = $request->query('online_sort', 'created_at');
+        $onlineDir = strtolower($request->query('online_direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $onlineAllowed = ['order_number', 'created_at', 'customer_name', 'total_amount', 'status'];
+        if (! in_array($onlineSort, $onlineAllowed, true)) {
+            $onlineSort = 'created_at';
+        }
+        $onlineQuery = MarketOrder::query()->with('items')->orderBy($onlineSort, $onlineDir);
+        $onlineOrders = $onlineQuery->paginate(50, ['*'], 'online_page')->withQueryString();
         if (request('tab') === 'online') {
             $onlineOrders->appends(['tab' => 'online']);
         }
-        return view('egg-sales.index', compact('sales', 'onlineOrders'));
+
+        return view('egg-sales.index', compact('sales', 'onlineOrders', 'sort', 'direction', 'onlineSort', 'onlineDir'));
     }
 
     /** Mark an online order as complete (eggs given to customer) and record in egg sales. */

@@ -10,28 +10,54 @@ class BirdMortalityController extends Controller
 {
     public function index(Request $request)
     {
-        $query = BirdBatchRecord::with('birdBatch.house.farm')
-            ->orderBy('record_date', 'desc');
+        $sort = $request->query('sort', 'record_date');
+        $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = ['record_date', 'batch', 'house', 'mortality_count', 'cull_count', 'feed_used_kg', 'water_used_litres', 'average_weight_kg'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'record_date';
+        }
+
+        $query = BirdBatchRecord::query()->with('birdBatch.house.farm');
 
         if ($request->filled('batch_id')) {
             $query->where('bird_batch_id', $request->batch_id);
         }
-
         if ($request->filled('date_from')) {
             $query->whereDate('record_date', '>=', $request->date_from);
         }
-
         if ($request->filled('date_to')) {
             $query->whereDate('record_date', '<=', $request->date_to);
         }
 
-        $records = $query->paginate(15)->withQueryString();
+        switch ($sort) {
+            case 'record_date':
+            case 'mortality_count':
+            case 'cull_count':
+            case 'feed_used_kg':
+            case 'water_used_litres':
+            case 'average_weight_kg':
+                $query->orderBy('bird_batch_records.' . $sort, $direction);
+                break;
+            case 'batch':
+                $query->leftJoin('bird_batches', 'bird_batch_records.bird_batch_id', '=', 'bird_batches.id')
+                    ->select('bird_batch_records.*')
+                    ->orderBy('bird_batches.batch_code', $direction);
+                break;
+            case 'house':
+                $query->leftJoin('bird_batches as bb', 'bird_batch_records.bird_batch_id', '=', 'bb.id')
+                    ->leftJoin('houses', 'bb.house_id', '=', 'houses.id')
+                    ->select('bird_batch_records.*')
+                    ->orderBy('houses.name', $direction);
+                break;
+        }
+
+        $records = $query->paginate(50)->withQueryString();
         $batches = BirdBatch::where('status', 'active')->orderBy('batch_code')->get();
 
         $totalMortality = BirdBatchRecord::sum('mortality_count');
         $totalCulled = BirdBatchRecord::sum('cull_count');
 
-        return view('bird-mortality.index', compact('records', 'batches', 'totalMortality', 'totalCulled'));
+        return view('bird-mortality.index', compact('records', 'batches', 'totalMortality', 'totalCulled', 'sort', 'direction'));
     }
 
     public function create()

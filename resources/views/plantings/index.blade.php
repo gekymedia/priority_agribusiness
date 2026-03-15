@@ -3,6 +3,10 @@
 @section('title', 'Plantings')
 
 @section('content')
+@php
+    $sort = $sort ?? 'planting_date';
+    $direction = $direction ?? 'desc';
+@endphp
 <div class="page-header">
     <h1 class="page-title">Plantings</h1>
     <p class="page-subtitle">Track crop planting activities and schedules</p>
@@ -22,11 +26,15 @@
             <table class="table table-hover">
     <thead>
         <tr>
-            <th>Field</th>
-            <th>Crop</th>
-            <th>Planting Date</th>
-            <th>Expected Harvest</th>
-            <th>Status</th>
+            @php
+                $sortUrl = fn ($col) => request()->fullUrlWithQuery(['sort' => $col, 'direction' => ($sort === $col && $direction === 'asc') ? 'desc' : 'asc', 'page' => null]);
+                $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+            @endphp
+            <th><a href="{{ $sortUrl('field') }}" class="text-decoration-none text-dark">Field</a><i class="fas{{ $sortIcon('field') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('crop_name') }}" class="text-decoration-none text-dark">Crop</a><i class="fas{{ $sortIcon('crop_name') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('planting_date') }}" class="text-decoration-none text-dark">Planting Date</a><i class="fas{{ $sortIcon('planting_date') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('expected_harvest_date') }}" class="text-decoration-none text-dark">Expected Harvest</a><i class="fas{{ $sortIcon('expected_harvest_date') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('status') }}" class="text-decoration-none text-dark">Status</a><i class="fas{{ $sortIcon('status') }} ms-1"></i></th>
             <th>Actions</th>
         </tr>
     </thead>

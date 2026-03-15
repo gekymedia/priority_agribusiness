@@ -7,10 +7,16 @@ use Illuminate\Http\Request;
 
 class ExpenseCategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $categories = ExpenseCategory::latest()->paginate(15);
-        return view('expense-categories.index', compact('categories'));
+        $sort = $request->query('sort', 'name');
+        $direction = strtolower($request->query('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $allowedSorts = ['name', 'type', 'description', 'is_active'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'name';
+        }
+        $categories = ExpenseCategory::query()->orderBy($sort, $direction)->paginate(50)->withQueryString();
+        return view('expense-categories.index', compact('categories', 'sort', 'direction'));
     }
 
     public function create()

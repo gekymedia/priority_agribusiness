@@ -8,10 +8,25 @@ use Illuminate\Http\Request;
 
 class FieldController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $fields = Field::with('farm')->paginate(15);
-        return view('fields.index', compact('fields'));
+        $sort = $request->query('sort', 'name');
+        $direction = strtolower($request->query('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $allowedSorts = ['name', 'farm', 'size', 'soil_type'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'name';
+        }
+
+        $query = Field::query()->with('farm');
+        if ($sort === 'farm') {
+            $query->leftJoin('farms', 'fields.farm_id', '=', 'farms.id')
+                ->select('fields.*')
+                ->orderBy('farms.name', $direction);
+        } else {
+            $query->orderBy('fields.' . $sort, $direction);
+        }
+        $fields = $query->paginate(50)->withQueryString();
+        return view('fields.index', compact('fields', 'sort', 'direction'));
     }
 
     public function create()

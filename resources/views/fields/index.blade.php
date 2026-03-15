@@ -3,6 +3,10 @@
 @section('title', 'Fields')
 
 @section('content')
+@php
+    $sort = $sort ?? 'name';
+    $direction = $direction ?? 'asc';
+@endphp
 <div class="page-header">
     <h1 class="page-title">Fields / Plots</h1>
     <p class="page-subtitle">Manage your agricultural land areas</p>
@@ -22,10 +26,14 @@
             <table class="table table-hover">
     <thead>
         <tr>
-            <th>Farm</th>
-            <th>Name</th>
-            <th>Size</th>
-            <th>Soil Type</th>
+            @php
+                $sortUrl = fn ($col) => request()->fullUrlWithQuery(['sort' => $col, 'direction' => ($sort === $col && $direction === 'asc') ? 'desc' : 'asc', 'page' => null]);
+                $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+            @endphp
+            <th><a href="{{ $sortUrl('farm') }}" class="text-decoration-none text-dark">Farm</a><i class="fas{{ $sortIcon('farm') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('name') }}" class="text-decoration-none text-dark">Name</a><i class="fas{{ $sortIcon('name') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('size') }}" class="text-decoration-none text-dark">Size</a><i class="fas{{ $sortIcon('size') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('soil_type') }}" class="text-decoration-none text-dark">Soil Type</a><i class="fas{{ $sortIcon('soil_type') }} ms-1"></i></th>
             <th>Actions</th>
         </tr>
     </thead>

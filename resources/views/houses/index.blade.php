@@ -3,6 +3,10 @@
 @section('title', 'Houses')
 
 @section('content')
+@php
+    $sort = $sort ?? 'name';
+    $direction = $direction ?? 'asc';
+@endphp
 <div class="page-header">
     <h1 class="page-title">Houses / Pens</h1>
     <p class="page-subtitle">Manage housing facilities for your birds and livestock</p>
@@ -22,10 +26,14 @@
             <table class="table table-hover">
     <thead>
         <tr>
-            <th>Farm</th>
-            <th>Name</th>
-            <th>Capacity</th>
-            <th>Type</th>
+            @php
+                $sortUrl = fn ($col) => request()->fullUrlWithQuery(['sort' => $col, 'direction' => ($sort === $col && $direction === 'asc') ? 'desc' : 'asc', 'page' => null]);
+                $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+            @endphp
+            <th><a href="{{ $sortUrl('farm') }}" class="text-decoration-none text-dark">Farm</a><i class="fas{{ $sortIcon('farm') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('name') }}" class="text-decoration-none text-dark">Name</a><i class="fas{{ $sortIcon('name') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('capacity') }}" class="text-decoration-none text-dark">Capacity</a><i class="fas{{ $sortIcon('capacity') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('type') }}" class="text-decoration-none text-dark">Type</a><i class="fas{{ $sortIcon('type') }} ms-1"></i></th>
             <th>Actions</th>
         </tr>
     </thead>

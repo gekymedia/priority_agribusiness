@@ -3,6 +3,10 @@
 @section('title', 'Expenses')
 
 @section('content')
+@php
+    $sort = $sort ?? 'date';
+    $direction = $direction ?? 'desc';
+@endphp
 <div class="page-header">
     <h1 class="page-title">Expenses</h1>
     <p class="page-subtitle">Track all farm expenses</p>
@@ -28,12 +32,16 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Farm</th>
-                        <th>Batch</th>
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Amount</th>
+                        @php
+                            $sortUrl = fn ($col) => request()->fullUrlWithQuery(['sort' => $col, 'direction' => ($sort === $col && $direction === 'asc') ? 'desc' : 'asc', 'page' => null]);
+                            $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+                        @endphp
+                        <th><a href="{{ $sortUrl('date') }}" class="text-decoration-none text-dark">Date</a><i class="fas{{ $sortIcon('date') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('farm') }}" class="text-decoration-none text-dark">Farm</a><i class="fas{{ $sortIcon('farm') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('batch') }}" class="text-decoration-none text-dark">Batch</a><i class="fas{{ $sortIcon('batch') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('category') }}" class="text-decoration-none text-dark">Category</a><i class="fas{{ $sortIcon('category') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('description') }}" class="text-decoration-none text-dark">Description</a><i class="fas{{ $sortIcon('description') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('amount') }}" class="text-decoration-none text-dark">Amount</a><i class="fas{{ $sortIcon('amount') }} ms-1"></i></th>
                         <th>Actions</th>
                     </tr>
                 </thead>

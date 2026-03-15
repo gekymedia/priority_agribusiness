@@ -16,15 +16,27 @@ class PayrollController extends Controller
     public function index(Request $request)
     {
         $month = $request->get('month');
-        $query = Payroll::with('employee')->latest('pay_period');
-        
+        $sort = $request->query('sort', 'pay_period');
+        $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = ['pay_period', 'employee', 'base_salary', 'allowances_total', 'deductions_total', 'net_pay', 'status', 'paid_at'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'pay_period';
+        }
+
+        $query = Payroll::query()->with('employee');
         if ($month) {
             $query->where('pay_period', 'like', $month . '%');
         }
-        
-        $payrolls = $query->paginate(20)->withQueryString();
-        
-        return view('payroll.index', compact('payrolls', 'month'));
+        if ($sort === 'employee') {
+            $query->leftJoin('employees', 'payrolls.employee_id', '=', 'employees.id')
+                ->select('payrolls.*')
+                ->orderBy('employees.first_name', $direction);
+        } else {
+            $query->orderBy('payrolls.' . $sort, $direction);
+        }
+        $payrolls = $query->paginate(50)->withQueryString();
+
+        return view('payroll.index', compact('payrolls', 'month', 'sort', 'direction'));
     }
 
     public function create()

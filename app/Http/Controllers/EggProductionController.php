@@ -205,10 +205,40 @@ class EggProductionController extends Controller
             ->with('success', "Bulk import complete: {$count} egg production record(s) added.");
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $productions = EggProduction::with('birdBatch.farm')->latest('date')->paginate(15);
-        return view('egg-productions.index', compact('productions'));
+        $sort = $request->query('sort', 'date');
+        $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = ['date', 'batch', 'farm', 'eggs_collected', 'cracked_or_damaged', 'eggs_used_internal'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'date';
+        }
+
+        $query = EggProduction::query()->with('birdBatch.farm');
+        switch ($sort) {
+            case 'date':
+                $query->orderBy('date', $direction);
+                break;
+            case 'eggs_collected':
+            case 'cracked_or_damaged':
+            case 'eggs_used_internal':
+                $query->orderBy($sort, $direction);
+                break;
+            case 'batch':
+                $query->leftJoin('bird_batches', 'egg_productions.bird_batch_id', '=', 'bird_batches.id')
+                    ->select('egg_productions.*')
+                    ->orderBy('bird_batches.batch_code', $direction);
+                break;
+            case 'farm':
+                $query->leftJoin('bird_batches as bb', 'egg_productions.bird_batch_id', '=', 'bb.id')
+                    ->leftJoin('farms', 'bb.farm_id', '=', 'farms.id')
+                    ->select('egg_productions.*')
+                    ->orderBy('farms.name', $direction);
+                break;
+        }
+
+        $productions = $query->paginate(50)->withQueryString();
+        return view('egg-productions.index', compact('productions', 'sort', 'direction'));
     }
 
     /**

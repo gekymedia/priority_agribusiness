@@ -85,6 +85,10 @@
     </div>
 @endif
 
+@php
+    $sort = $sort ?? 'record_date';
+    $direction = $direction ?? 'desc';
+@endphp
 <!-- Records Table -->
 <div class="agri-card">
     <div class="agri-card-header">
@@ -95,14 +99,18 @@
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Batch</th>
-                        <th>House</th>
-                        <th>Mortality</th>
-                        <th>Culled</th>
-                        <th>Feed (kg)</th>
-                        <th>Water (L)</th>
-                        <th>Avg Weight</th>
+                        @php
+                            $sortUrl = fn ($col) => request()->fullUrlWithQuery(array_merge(request()->only(['batch_id', 'date_from', 'date_to']), ['sort' => $col, 'direction' => ($sort === $col && $direction === 'asc') ? 'desc' : 'asc', 'page' => null]));
+                            $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+                        @endphp
+                        <th><a href="{{ $sortUrl('record_date') }}" class="text-decoration-none text-dark">Date</a><i class="fas{{ $sortIcon('record_date') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('batch') }}" class="text-decoration-none text-dark">Batch</a><i class="fas{{ $sortIcon('batch') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('house') }}" class="text-decoration-none text-dark">House</a><i class="fas{{ $sortIcon('house') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('mortality_count') }}" class="text-decoration-none text-dark">Mortality</a><i class="fas{{ $sortIcon('mortality_count') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('cull_count') }}" class="text-decoration-none text-dark">Culled</a><i class="fas{{ $sortIcon('cull_count') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('feed_used_kg') }}" class="text-decoration-none text-dark">Feed (kg)</a><i class="fas{{ $sortIcon('feed_used_kg') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('water_used_litres') }}" class="text-decoration-none text-dark">Water (L)</a><i class="fas{{ $sortIcon('water_used_litres') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('average_weight_kg') }}" class="text-decoration-none text-dark">Avg Weight</a><i class="fas{{ $sortIcon('average_weight_kg') }} ms-1"></i></th>
                         <th width="120">Actions</th>
                     </tr>
                 </thead>

@@ -10,10 +10,37 @@ use Illuminate\Http\Request;
 
 class BirdSaleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $sales = BirdSale::with('birdBatch.farm')->latest('date')->paginate(15);
-        return view('bird-sales.index', compact('sales'));
+        $sort = $request->query('sort', 'date');
+        $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = ['date', 'batch', 'farm', 'quantity_sold', 'price_per_bird', 'buyer_name'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'date';
+        }
+
+        $query = BirdSale::query()->with('birdBatch.farm');
+        switch ($sort) {
+            case 'date':
+            case 'quantity_sold':
+            case 'price_per_bird':
+            case 'buyer_name':
+                $query->orderBy($sort, $direction);
+                break;
+            case 'batch':
+                $query->leftJoin('bird_batches', 'bird_sales.bird_batch_id', '=', 'bird_batches.id')
+                    ->select('bird_sales.*')
+                    ->orderBy('bird_batches.batch_code', $direction);
+                break;
+            case 'farm':
+                $query->leftJoin('bird_batches as bb', 'bird_sales.bird_batch_id', '=', 'bb.id')
+                    ->leftJoin('farms', 'bb.farm_id', '=', 'farms.id')
+                    ->select('bird_sales.*')
+                    ->orderBy('farms.name', $direction);
+                break;
+        }
+        $sales = $query->paginate(50)->withQueryString();
+        return view('bird-sales.index', compact('sales', 'sort', 'direction'));
     }
 
     public function create()

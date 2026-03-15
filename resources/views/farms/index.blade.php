@@ -3,6 +3,10 @@
 @section('title', 'Farms')
 
 @section('content')
+@php
+    $sort = $sort ?? 'name';
+    $direction = $direction ?? 'asc';
+@endphp
 <div class="page-header">
     <h1 class="page-title">Farms</h1>
     <p class="page-subtitle">Manage your agricultural farm locations</p>
@@ -22,9 +26,13 @@
             <table class="table table-hover">
     <thead>
         <tr>
-            <th>Name</th>
-            <th>Location</th>
-            <th>Type</th>
+            @php
+                $sortUrl = fn ($col) => request()->fullUrlWithQuery(['sort' => $col, 'direction' => ($sort === $col && $direction === 'asc') ? 'desc' : 'asc', 'page' => null]);
+                $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+            @endphp
+            <th><a href="{{ $sortUrl('name') }}" class="text-decoration-none text-dark">Name</a><i class="fas{{ $sortIcon('name') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('location') }}" class="text-decoration-none text-dark">Location</a><i class="fas{{ $sortIcon('location') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('farm_type') }}" class="text-decoration-none text-dark">Type</a><i class="fas{{ $sortIcon('farm_type') }} ms-1"></i></th>
             <th>Actions</th>
         </tr>
     </thead>

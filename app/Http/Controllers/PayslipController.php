@@ -11,17 +11,26 @@ class PayslipController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+
         
         if (!($user instanceof Employee)) {
             return redirect()->route('dashboard')
                 ->with('error', 'Payslips are only available for employees.');
         }
 
-        $payrolls = Payroll::where('employee_id', $user->id)
-            ->orderBy('pay_period_end', 'desc')
-            ->paginate(15);
+        $sort = $request->query('sort', 'pay_period_end');
+        $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = ['pay_period_end', 'base_salary', 'allowances_total', 'deductions_total', 'net_pay', 'status', 'paid_at'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'pay_period_end';
+        }
 
-        return view('payslips.index', compact('payrolls'));
+        $payrolls = Payroll::where('employee_id', $user->id)
+            ->orderBy($sort, $direction)
+            ->paginate(50)
+            ->withQueryString();
+
+        return view('payslips.index', compact('payrolls', 'sort', 'direction'));
     }
 
     public function show(Payroll $payroll)

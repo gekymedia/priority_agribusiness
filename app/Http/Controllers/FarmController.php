@@ -10,10 +10,16 @@ class FarmController extends Controller
     /**
      * Display a listing of the farms.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $farms = Farm::paginate(15);
-        return view('farms.index', compact('farms'));
+        $sort = $request->query('sort', 'name');
+        $direction = strtolower($request->query('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $allowedSorts = ['name', 'location', 'farm_type'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'name';
+        }
+        $farms = Farm::query()->orderBy($sort, $direction)->paginate(50)->withQueryString();
+        return view('farms.index', compact('farms', 'sort', 'direction'));
     }
 
     /**

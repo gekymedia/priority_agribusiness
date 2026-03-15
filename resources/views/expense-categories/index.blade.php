@@ -3,6 +3,10 @@
 @section('title', 'Expense Categories')
 
 @section('content')
+@php
+    $sort = $sort ?? 'name';
+    $direction = $direction ?? 'asc';
+@endphp
 <div class="page-header">
     <h1 class="page-title">Expense Categories</h1>
     <p class="page-subtitle">Manage expense categories for better organization</p>
@@ -22,10 +26,14 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Description</th>
-                        <th>Status</th>
+                        @php
+                            $sortUrl = fn ($col) => request()->fullUrlWithQuery(['sort' => $col, 'direction' => ($sort === $col && $direction === 'asc') ? 'desc' : 'asc', 'page' => null]);
+                            $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+                        @endphp
+                        <th><a href="{{ $sortUrl('name') }}" class="text-decoration-none text-dark">Name</a><i class="fas{{ $sortIcon('name') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('type') }}" class="text-decoration-none text-dark">Type</a><i class="fas{{ $sortIcon('type') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('description') }}" class="text-decoration-none text-dark">Description</a><i class="fas{{ $sortIcon('description') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('is_active') }}" class="text-decoration-none text-dark">Status</a><i class="fas{{ $sortIcon('is_active') }} ms-1"></i></th>
                         <th>Actions</th>
                     </tr>
                 </thead>

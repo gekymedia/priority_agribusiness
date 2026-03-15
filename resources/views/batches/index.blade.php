@@ -3,6 +3,10 @@
 @section('title', 'Bird Batches')
 
 @section('content')
+@php
+    $sort = $sort ?? 'batch_code';
+    $direction = $direction ?? 'asc';
+@endphp
 <div class="page-header">
     <h1 class="page-title">Bird Batches</h1>
     <p class="page-subtitle">Track and manage your poultry batches</p>
@@ -22,13 +26,17 @@
             <table class="table table-hover">
     <thead>
         <tr>
-            <th>Batch Code</th>
-            <th>Farm</th>
-            <th>House</th>
-            <th>Purpose</th>
-            <th>Arrival Date</th>
-            <th>Quantity</th>
-            <th>Status</th>
+            @php
+                $sortUrl = fn ($col) => request()->fullUrlWithQuery(['sort' => $col, 'direction' => ($sort === $col && $direction === 'asc') ? 'desc' : 'asc', 'page' => null]);
+                $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+            @endphp
+            <th><a href="{{ $sortUrl('batch_code') }}" class="text-decoration-none text-dark">Batch Code</a><i class="fas{{ $sortIcon('batch_code') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('farm') }}" class="text-decoration-none text-dark">Farm</a><i class="fas{{ $sortIcon('farm') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('house') }}" class="text-decoration-none text-dark">House</a><i class="fas{{ $sortIcon('house') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('purpose') }}" class="text-decoration-none text-dark">Purpose</a><i class="fas{{ $sortIcon('purpose') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('arrival_date') }}" class="text-decoration-none text-dark">Arrival Date</a><i class="fas{{ $sortIcon('arrival_date') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('quantity_arrived') }}" class="text-decoration-none text-dark">Quantity</a><i class="fas{{ $sortIcon('quantity_arrived') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('status') }}" class="text-decoration-none text-dark">Status</a><i class="fas{{ $sortIcon('status') }} ms-1"></i></th>
             <th>Actions</th>
         </tr>
     </thead>

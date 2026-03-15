@@ -8,6 +8,10 @@
     <p class="page-subtitle">View your salary payment history</p>
 </div>
 
+@php
+    $sort = $sort ?? 'pay_period_end';
+    $direction = $direction ?? 'desc';
+@endphp
 @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
@@ -31,13 +35,17 @@
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th>Pay Period</th>
-                        <th>Base Salary</th>
-                        <th>Allowances</th>
-                        <th>Deductions</th>
-                        <th>Net Pay</th>
-                        <th>Status</th>
-                        <th>Paid Date</th>
+                        @php
+                            $sortUrl = fn ($col) => request()->fullUrlWithQuery(['sort' => $col, 'direction' => ($sort === $col && $direction === 'asc') ? 'desc' : 'asc', 'page' => null]);
+                            $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+                        @endphp
+                        <th><a href="{{ $sortUrl('pay_period_end') }}" class="text-decoration-none text-dark">Pay Period</a><i class="fas{{ $sortIcon('pay_period_end') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('base_salary') }}" class="text-decoration-none text-dark">Base Salary</a><i class="fas{{ $sortIcon('base_salary') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('allowances_total') }}" class="text-decoration-none text-dark">Allowances</a><i class="fas{{ $sortIcon('allowances_total') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('deductions_total') }}" class="text-decoration-none text-dark">Deductions</a><i class="fas{{ $sortIcon('deductions_total') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('net_pay') }}" class="text-decoration-none text-dark">Net Pay</a><i class="fas{{ $sortIcon('net_pay') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('status') }}" class="text-decoration-none text-dark">Status</a><i class="fas{{ $sortIcon('status') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('paid_at') }}" class="text-decoration-none text-dark">Paid Date</a><i class="fas{{ $sortIcon('paid_at') }} ms-1"></i></th>
                         <th>Actions</th>
                     </tr>
                 </thead>

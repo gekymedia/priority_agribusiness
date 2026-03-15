@@ -3,6 +3,10 @@
 @section('title', 'Egg Production')
 
 @section('content')
+@php
+    $sort = $sort ?? 'date';
+    $direction = $direction ?? 'desc';
+@endphp
 <div class="page-header">
     <h1 class="page-title">Egg Production Records</h1>
     <p class="page-subtitle">Track daily egg production from your layer batches</p>
@@ -25,12 +29,16 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Batch</th>
-                        <th>Farm</th>
-                        <th>Eggs Collected</th>
-                        <th>Cracked/Damaged</th>
-                        <th>Used Internal</th>
+                        @php
+                            $sortUrl = fn ($col) => request()->fullUrlWithQuery(['sort' => $col, 'direction' => ($sort === $col && $direction === 'asc') ? 'desc' : 'asc', 'page' => null]);
+                            $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
+                        @endphp
+                        <th><a href="{{ $sortUrl('date') }}" class="text-decoration-none text-dark">Date</a><i class="fas{{ $sortIcon('date') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('batch') }}" class="text-decoration-none text-dark">Batch</a><i class="fas{{ $sortIcon('batch') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('farm') }}" class="text-decoration-none text-dark">Farm</a><i class="fas{{ $sortIcon('farm') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('eggs_collected') }}" class="text-decoration-none text-dark">Eggs Collected</a><i class="fas{{ $sortIcon('eggs_collected') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('cracked_or_damaged') }}" class="text-decoration-none text-dark">Cracked/Damaged</a><i class="fas{{ $sortIcon('cracked_or_damaged') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('eggs_used_internal') }}" class="text-decoration-none text-dark">Used Internal</a><i class="fas{{ $sortIcon('eggs_used_internal') }} ms-1"></i></th>
                         <th>Available</th>
                         <th>Actions</th>
                     </tr>

@@ -8,10 +8,25 @@ use Illuminate\Http\Request;
 
 class PlantingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $plantings = Planting::with('field')->paginate(15);
-        return view('plantings.index', compact('plantings'));
+        $sort = $request->query('sort', 'planting_date');
+        $direction = strtolower($request->query('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $allowedSorts = ['field', 'crop_name', 'planting_date', 'expected_harvest_date', 'status'];
+        if (! in_array($sort, $allowedSorts, true)) {
+            $sort = 'planting_date';
+        }
+
+        $query = Planting::query()->with('field');
+        if ($sort === 'field') {
+            $query->leftJoin('fields', 'plantings.field_id', '=', 'fields.id')
+                ->select('plantings.*')
+                ->orderBy('fields.name', $direction);
+        } else {
+            $query->orderBy('plantings.' . $sort, $direction);
+        }
+        $plantings = $query->paginate(50)->withQueryString();
+        return view('plantings.index', compact('plantings', 'sort', 'direction'));
     }
 
     public function create()
