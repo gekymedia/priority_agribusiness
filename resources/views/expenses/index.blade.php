@@ -50,13 +50,16 @@
                         // Group rows by date and apply a consistent light background per date-group.
                         $currentDateKey = null;
                         $groupIndex = -1;
+                        $todayKey = now()->toDateString(); // Y-m-d
+                        $yesterdayKey = now()->subDay()->toDateString(); // Y-m-d
                         $rowBgColors = [
-                            'rgba(99, 102, 241, 0.08)',  // indigo-500-ish
-                            'rgba(56, 189, 248, 0.10)',  // sky-500-ish
-                            'rgba(16, 185, 129, 0.10)',  // emerald-500-ish
-                            'rgba(245, 158, 11, 0.10)',  // amber-500-ish
-                            'rgba(239, 68, 68, 0.08)',   // red-500-ish
-                            'rgba(168, 85, 247, 0.10)',  // violet-500-ish
+                            // Keep alpha very low to avoid affecting text readability.
+                            'rgba(99, 102, 241, 0.06)',  // indigo
+                            'rgba(56, 189, 248, 0.07)',  // sky
+                            'rgba(16, 185, 129, 0.06)',  // emerald
+                            'rgba(245, 158, 11, 0.07)',  // amber
+                            'rgba(239, 68, 68, 0.05)',   // red
+                            'rgba(168, 85, 247, 0.06)',  // violet
                         ];
                         $rowBgCount = count($rowBgColors);
                     @endphp
@@ -67,7 +70,14 @@
                                 $currentDateKey = $dateKey;
                                 $groupIndex++;
                             }
-                            $rowBg = $rowBgColors[$groupIndex % $rowBgCount] ?? 'transparent';
+                            // Explicit relative coloring for readability.
+                            if ($dateKey === $todayKey) {
+                                $rowBg = 'rgba(245, 158, 11, 0.18)'; // very light yellow
+                            } elseif ($dateKey === $yesterdayKey) {
+                                $rowBg = 'rgba(59, 130, 246, 0.16)'; // very light blue
+                            } else {
+                                $rowBg = $rowBgColors[$groupIndex % $rowBgCount] ?? 'transparent';
+                            }
                         @endphp
                     <tr style="background-color: {{ $rowBg }};">
                         <td>{{ $expense->date->format('M d, Y') }}</td>
