@@ -83,7 +83,7 @@ class FinanceController extends Controller
 
     public function expenditureIndex(Request $request)
     {
-        $query = PoultryExpense::with(['farm', 'birdBatch', 'category']);
+        $query = PoultryExpense::with(['farm', 'birdBatch', 'expenseCategory']);
         if ($request->filled('from')) {
             $query->where('date', '>=', $request->input('from'));
         }
@@ -114,7 +114,8 @@ class FinanceController extends Controller
         }
 
         $client = new PriorityBankApiClient($baseUrl, $token);
-        $categoryName = $expense->category?->name ?? $expense->category ?? 'Expense';
+        $legacyCategory = $expense->getRawOriginal('category');
+        $categoryName = $expense->expenseCategory?->name ?? $legacyCategory ?? $expense->category ?? 'Expense';
         $result = $client->pushExpense(
             $systemId,
             $extId,

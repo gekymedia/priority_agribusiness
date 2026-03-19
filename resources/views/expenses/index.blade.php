@@ -53,7 +53,7 @@
                         <td>{{ $expense->birdBatch->batch_code ?? 'General' }}</td>
                         <td>
                             <span class="badge bg-primary bg-opacity-10 text-primary">
-                                {{ $expense->category?->name ?? ($expense->getRawOriginal('category') ?: 'Uncategorized') }}
+                                {{ $expense->expenseCategory?->name ?? ($expense->getRawOriginal('category') ?: 'Uncategorized') }}
                             </span>
                         </td>
                         <td>{{ \Illuminate\Support\Str::limit($expense->description ?? 'N/A', 30) }}</td>

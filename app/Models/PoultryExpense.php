@@ -36,7 +36,13 @@ class PoultryExpense extends Model
         return $this->belongsTo(Farm::class);
     }
 
-    public function category(): BelongsTo
+    /**
+     * Expense category (uses category_id FK).
+     *
+     * Note: The legacy DB column is also named `category` (string). We avoid naming
+     * this relationship `category()` to prevent collisions with the attribute.
+     */
+    public function expenseCategory(): BelongsTo
     {
         return $this->belongsTo(ExpenseCategory::class, 'category_id');
     }

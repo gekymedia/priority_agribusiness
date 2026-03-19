@@ -32,7 +32,7 @@
                         <label class="text-muted">Category</label>
                         <p>
                             <span class="badge bg-primary bg-opacity-10 text-primary">
-                                {{ $expense->category?->name ?? ($expense->getRawOriginal('category') ?: 'N/A') }}
+                                {{ $expense->expenseCategory?->name ?? ($expense->getRawOriginal('category') ?: 'N/A') }}
                             </span>
                         </p>
                     </div>

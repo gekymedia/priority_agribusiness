@@ -172,7 +172,7 @@ class PriorityBankIntegrationService
         try {
             $extId = $expense->external_transaction_id ?? ('agri_poultry_expense_' . $expense->id);
             $legacyCategory = $expense->getRawOriginal('category'); // legacy string column (pre category_id)
-            $categoryName = $expense->category?->name ?? ($legacyCategory ?: null);
+            $categoryName = $expense->expenseCategory?->name ?? ($legacyCategory ?: null);
             $result = $this->client->pushExpense(
                 systemId: $this->systemId,
                 externalTransactionId: $extId,

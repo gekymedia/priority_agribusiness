@@ -110,7 +110,7 @@ class FinancialApiController extends Controller
         $endDate = $request->get('end_date', now()->endOfYear());
 
         $poultryExpenses = $user->poultryExpenses()
-            ->with('category')
+            ->with('expenseCategory')
             ->whereBetween('date', [$startDate, $endDate])
             ->get();
 
@@ -131,7 +131,7 @@ class FinancialApiController extends Controller
                         'date' => $expense->date,
                         'amount' => $expense->amount,
                         'description' => $expense->description,
-                        'category' => $expense->category ? $expense->category->name : null,
+                        'category' => $expense->expenseCategory ? $expense->expenseCategory->name : null,
                     ];
                 }),
                 'crop_expenses' => $cropExpenses->map(function ($expense) {

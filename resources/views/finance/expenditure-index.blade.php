@@ -56,7 +56,7 @@
                     <tr>
                         <td>{{ $expense->date?->format('M d, Y') }}</td>
                         <td>{{ $expense->farm->name ?? 'N/A' }}</td>
-                        <td>{{ $expense->category?->name ?? ($expense->getRawOriginal('category') ?: 'Uncategorized') }}</td>
+                        <td>{{ $expense->expenseCategory?->name ?? ($expense->getRawOriginal('category') ?: 'Uncategorized') }}</td>
                         <td>{{ \Illuminate\Support\Str::limit($expense->description ?? '—', 30) }}</td>
                         <td><strong class="text-danger">₵{{ number_format($expense->amount, 2) }}</strong></td>
                         <td class="text-muted small">{{ $expense->external_transaction_id ?? '—' }}</td>

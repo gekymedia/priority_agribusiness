@@ -22,7 +22,7 @@ class ExpenseController extends Controller
             $sort = 'date';
         }
 
-        $query = PoultryExpense::query()->with(['farm', 'birdBatch', 'category']);
+        $query = PoultryExpense::query()->with(['farm', 'birdBatch', 'expenseCategory']);
 
         switch ($sort) {
             case 'date':
@@ -344,7 +344,7 @@ class ExpenseController extends Controller
 
     public function show(PoultryExpense $expense)
     {
-        $expense->load(['farm', 'birdBatch', 'category']);
+        $expense->load(['farm', 'birdBatch', 'expenseCategory']);
         return view('expenses.show', compact('expense'));
     }
 
@@ -353,7 +353,7 @@ class ExpenseController extends Controller
         $farms = Farm::all();
         $batches = BirdBatch::with('farm')->get();
         $categories = ExpenseCategory::where('is_active', true)->get();
-        $expense->load(['farm', 'birdBatch', 'category']);
+        $expense->load(['farm', 'birdBatch', 'expenseCategory']);
         return view('expenses.edit', compact('expense', 'farms', 'batches', 'categories'));
     }
 
