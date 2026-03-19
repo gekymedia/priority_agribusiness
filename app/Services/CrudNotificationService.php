@@ -143,7 +143,7 @@ class CrudNotificationService
     protected function expenseSummary(Model $record): string
     {
         $amount = number_format($record->amount ?? 0, 2);
-        $category = $record->category?->name ?? 'Uncategorized';
+        $category = $record->category?->name ?? ($record->getRawOriginal('category') ?: 'Uncategorized');
         $description = $record->description ?? 'N/A';
         
         return "Amount: GHS {$amount}\nCategory: {$category}\nDescription: {$description}";

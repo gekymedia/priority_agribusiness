@@ -171,6 +171,8 @@ class PriorityBankIntegrationService
 
         try {
             $extId = $expense->external_transaction_id ?? ('agri_poultry_expense_' . $expense->id);
+            $legacyCategory = $expense->getRawOriginal('category'); // legacy string column (pre category_id)
+            $categoryName = $expense->category?->name ?? ($legacyCategory ?: null);
             $result = $this->client->pushExpense(
                 systemId: $this->systemId,
                 externalTransactionId: $extId,
@@ -179,10 +181,10 @@ class PriorityBankIntegrationService
                 channel: 'cash',
                 options: [
                     'notes' => $expense->description ?? 'Poultry expense',
-                    'expense_category_name' => $this->mapExpenseCategory($expense->category?->name ?? $expense->category),
+                    'expense_category_name' => $this->mapExpenseCategory($categoryName),
                     'metadata' => [
                         'operation' => 'poultry_farm',
-                        'category' => $expense->category?->name ?? $expense->category,
+                        'category' => $categoryName,
                         'farm_id' => $expense->farm_id,
                     ],
                 ]
