@@ -70,13 +70,15 @@
                                 $currentDateKey = $dateKey;
                                 $groupIndex++;
                             }
-                            // Explicit relative coloring for readability.
+                            // Explicit relative coloring for readability, everything else gets a deterministic
+                            // "random" color based on date.
                             if ($dateKey === $todayKey) {
                                 $rowBg = 'rgba(245, 158, 11, 0.18)'; // very light yellow
                             } elseif ($dateKey === $yesterdayKey) {
                                 $rowBg = 'rgba(59, 130, 246, 0.16)'; // very light blue
                             } else {
-                                $rowBg = $rowBgColors[$groupIndex % $rowBgCount] ?? 'transparent';
+                                $colorIndex = abs(crc32((string) $dateKey)) % max(1, $rowBgCount);
+                                $rowBg = $rowBgColors[$colorIndex] ?? 'transparent';
                             }
                         @endphp
                     <tr style="background-color: {{ $rowBg }};">
