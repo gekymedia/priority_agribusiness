@@ -59,12 +59,18 @@
                         <td><strong class="text-success">₵{{ number_format($income->amount, 2) }}</strong></td>
                         <td class="text-muted small">{{ $income->external_transaction_id ?? '—' }}</td>
                         <td>
-                            <form action="{{ route('finance.income.sync', $income) }}" method="POST" class="d-inline" data-sync-form>
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-primary" title="Sync with Priority Bank">
-                                    <i class="fas fa-sync-alt"></i>
-                                </button>
-                            </form>
+                            @if($income->is_manual)
+                                <form action="{{ route('finance.income.sync', $income->id) }}" method="POST" class="d-inline" data-sync-form>
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-primary" title="Sync with Priority Bank">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </form>
+                            @else
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                    Synced via sale
+                                </span>
+                            @endif
                         </td>
                     </tr>
                     @empty

@@ -3,26 +3,125 @@
 namespace App\Http\Controllers;
 
 use App\Models\Income;
+use App\Models\EggSale;
+use App\Models\BirdSale;
+use App\Models\CropSale;
 use App\Models\PoultryExpense;
 use App\Models\SystemSetting;
 use App\Services\PriorityBankApiClient;
 use App\Services\PriorityBankIntegrationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class FinanceController extends Controller
 {
     public function incomeIndex(Request $request)
     {
-        $query = Income::query();
-        if ($request->filled('from')) {
-            $query->where('received_on', '>=', $request->input('from'));
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        $manualQuery = Income::query();
+        if ($from) {
+            $manualQuery->where('received_on', '>=', $from);
         }
-        if ($request->filled('to')) {
-            $query->where('received_on', '<=', $request->input('to'));
+        if ($to) {
+            $manualQuery->where('received_on', '<=', $to);
         }
-        $incomes = $query->latest('received_on')->paginate(20);
-        $total = (clone $query)->sum('amount');
+
+        $manualIncomes = $manualQuery->get()->map(function ($income) {
+            return (object) [
+                'id' => $income->id,
+                'received_on' => $income->received_on,
+                'category' => $income->category,
+                'description' => $income->description ?? '—',
+                'amount' => (float) $income->amount,
+                'external_transaction_id' => $income->external_transaction_id,
+                'is_manual' => true,
+            ];
+        });
+
+        $eggSalesQuery = EggSale::query();
+        if ($from) {
+            $eggSalesQuery->whereDate('date', '>=', $from);
+        }
+        if ($to) {
+            $eggSalesQuery->whereDate('date', '<=', $to);
+        }
+        $eggSales = $eggSalesQuery->get()->map(function ($sale) {
+            return (object) [
+                'id' => 'egg-' . $sale->id,
+                'received_on' => $sale->date,
+                'category' => 'Egg Sales',
+                'description' => trim("Egg sale: {$sale->quantity_sold} {$sale->unit_type}" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
+                'amount' => (float) ($sale->quantity_sold * $sale->price_per_unit),
+                'external_transaction_id' => 'agri_egg_sale_' . $sale->id,
+                'is_manual' => false,
+            ];
+        });
+
+        $birdSalesQuery = BirdSale::query();
+        if ($from) {
+            $birdSalesQuery->whereDate('date', '>=', $from);
+        }
+        if ($to) {
+            $birdSalesQuery->whereDate('date', '<=', $to);
+        }
+        $birdSales = $birdSalesQuery->get()->map(function ($sale) {
+            return (object) [
+                'id' => 'bird-' . $sale->id,
+                'received_on' => $sale->date,
+                'category' => 'Bird Sales',
+                'description' => trim("Bird sale: {$sale->quantity_sold} birds" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
+                'amount' => (float) ($sale->quantity_sold * $sale->price_per_bird),
+                'external_transaction_id' => 'agri_bird_sale_' . $sale->id,
+                'is_manual' => false,
+            ];
+        });
+
+        $cropSalesQuery = CropSale::query();
+        if ($from) {
+            $cropSalesQuery->whereDate('date', '>=', $from);
+        }
+        if ($to) {
+            $cropSalesQuery->whereDate('date', '<=', $to);
+        }
+        $cropSales = $cropSalesQuery->get()->map(function ($sale) {
+            return (object) [
+                'id' => 'crop-' . $sale->id,
+                'received_on' => $sale->date,
+                'category' => 'Crop Sales',
+                'description' => trim("Crop sale: {$sale->quantity_sold} units" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
+                'amount' => (float) ($sale->quantity_sold * $sale->price_per_unit),
+                'external_transaction_id' => 'agri_crop_sale_' . $sale->id,
+                'is_manual' => false,
+            ];
+        });
+
+        $allIncome = $manualIncomes
+            ->concat($eggSales)
+            ->concat($birdSales)
+            ->concat($cropSales)
+            ->sortByDesc(function ($row) {
+                return optional($row->received_on)->toDateString();
+            })
+            ->values();
+
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $perPage = 20;
+        $items = $allIncome->forPage($page, $perPage)->values();
+        $incomes = new LengthAwarePaginator(
+            $items,
+            $allIncome->count(),
+            $perPage,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
+        $total = (float) $allIncome->sum('amount');
+
         return view('finance.income-index', compact('incomes', 'total'));
     }
 
@@ -66,7 +165,7 @@ class FinanceController extends Controller
             $systemId,
             $income->external_transaction_id,
             (float) $income->amount,
-            $income->received_on?->format('Y-m-d'),
+            $income->received_on ? \Carbon\Carbon::parse($income->received_on)->format('Y-m-d') : null,
             'bank',
             [
                 'notes' => $income->description ?? $income->category,
@@ -120,7 +219,7 @@ class FinanceController extends Controller
             $systemId,
             $extId,
             (float) $expense->amount,
-            $expense->date?->format('Y-m-d'),
+            $expense->date ? \Carbon\Carbon::parse($expense->date)->format('Y-m-d') : null,
             'bank',
             [
                 'notes' => $expense->description ?? $categoryName,
