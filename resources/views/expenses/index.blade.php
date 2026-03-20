@@ -26,6 +26,54 @@
     </div>
 </div>
 
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="agri-card h-100">
+            <div class="agri-card-body py-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">Today's Expenses</div>
+                        <h5 class="mb-0 text-danger">₵{{ number_format($todayTotal ?? 0, 2) }}</h5>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-sun fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="agri-card h-100">
+            <div class="agri-card-body py-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">Yesterday's Expenses</div>
+                        <h5 class="mb-0 text-primary">₵{{ number_format($yesterdayTotal ?? 0, 2) }}</h5>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-calendar-day fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="agri-card h-100">
+            <div class="agri-card-body py-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">This Month</div>
+                        <h5 class="mb-0 text-success">₵{{ number_format($monthTotal ?? 0, 2) }}</h5>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-chart-line fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="agri-card">
     <div class="agri-card-body">
         <div class="table-responsive">

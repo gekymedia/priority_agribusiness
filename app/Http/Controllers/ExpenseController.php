@@ -52,7 +52,21 @@ class ExpenseController extends Controller
         }
 
         $expenses = $query->paginate(50)->withQueryString();
-        return view('expenses.index', compact('expenses', 'sort', 'direction'));
+
+        $todayTotal = (float) PoultryExpense::whereRaw('DATE(`date`) = ?', [Carbon::today()->toDateString()])->sum('amount');
+        $yesterdayTotal = (float) PoultryExpense::whereRaw('DATE(`date`) = ?', [Carbon::yesterday()->toDateString()])->sum('amount');
+        $monthTotal = (float) PoultryExpense::whereMonth('date', Carbon::now()->month)
+            ->whereYear('date', Carbon::now()->year)
+            ->sum('amount');
+
+        return view('expenses.index', compact(
+            'expenses',
+            'sort',
+            'direction',
+            'todayTotal',
+            'yesterdayTotal',
+            'monthTotal'
+        ));
     }
 
     public function create()
