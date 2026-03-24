@@ -67,11 +67,14 @@
             <div class="agri-card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <h6 class="text-muted mb-1">Completed Tasks</h6>
-                        <h3 class="mb-0">{{ \App\Models\Task::where('status', 'done')->count() }}</h3>
+                        <h6 class="text-muted mb-1">Eggs In Stock</h6>
+                        <h3 class="mb-0">{{ number_format($totalEggsInStock ?? 0) }}</h3>
+                        <small class="text-muted">
+                            {{ number_format($eggsInStockCrates ?? 0) }} crates + {{ number_format($eggsInStockLoose ?? 0) }} eggs ({{ $eggsPerCrate ?? 30 }}/crate)
+                        </small>
                     </div>
                     <div style="width: 60px; height: 60px; background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(139, 195, 74, 0.1)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-check-circle fa-2x" style="color: var(--success);"></i>
+                        <i class="fas fa-box-open fa-2x" style="color: var(--success);"></i>
                     </div>
                 </div>
             </div>

@@ -17,6 +17,10 @@ class DashboardController extends Controller
         $chart = $this->buildEggProductionVsSalesChart(31);
         $eggsProducedToday = $this->eggsProducedToday();
         $eggsSoldToday = $this->eggsSoldToday();
+        $eggsPerCrate = $this->eggsPerCrate();
+        $totalEggsInStock = $this->totalEggsInStock($eggsPerCrate);
+        $eggsInStockCrates = intdiv($totalEggsInStock, $eggsPerCrate);
+        $eggsInStockLoose = $totalEggsInStock % $eggsPerCrate;
         $totalRemainingBirds = (int) BirdBatch::query()
             ->withSum('dailyRecords', 'mortality_count')
             ->withSum('dailyRecords', 'cull_count')
@@ -45,6 +49,10 @@ class DashboardController extends Controller
             'chart',
             'eggsProducedToday',
             'eggsSoldToday',
+            'totalEggsInStock',
+            'eggsInStockCrates',
+            'eggsInStockLoose',
+            'eggsPerCrate',
             'totalRemainingBirds',
             'incomeExpenditureBalance',
             'bankBalance'
@@ -59,14 +67,11 @@ class DashboardController extends Controller
 
     protected function eggsSoldToday(): int
     {
-        $eggsPerCrate = 30;
-        if (class_exists(\App\Models\PaymentSetting::class) && \Illuminate\Support\Facades\Schema::hasTable('payment_settings')) {
-            $eggsPerCrate = max(1, (int) \App\Models\PaymentSetting::getEggMarketEggsPerCrate());
-        }
+        $eggsPerCrate = $this->eggsPerCrate();
         $sold = EggSale::whereDate('date', today())->get();
         $pieces = $sold->where('unit_type', 'piece')->sum('quantity_sold');
-        $crates = $sold->where('unit_type', 'crate')->sum('quantity_sold');
-        return (int) ($pieces + $crates * $eggsPerCrate);
+        $crates = $sold->whereIn('unit_type', ['crate', 'tray'])->sum('quantity_sold');
+        return (int) ($pieces + ($crates * $eggsPerCrate));
     }
 
     /**
@@ -81,10 +86,7 @@ class DashboardController extends Controller
         $production = [];
         $sales = [];
 
-        $eggsPerCrate = 30;
-        if (class_exists(\App\Models\PaymentSetting::class) && \Illuminate\Support\Facades\Schema::hasTable('payment_settings')) {
-            $eggsPerCrate = max(1, (int) \App\Models\PaymentSetting::getEggMarketEggsPerCrate());
-        }
+        $eggsPerCrate = $this->eggsPerCrate();
 
         for ($d = 0; $d < $days; $d++) {
             $date = $start->copy()->addDays($d);
@@ -99,7 +101,7 @@ class DashboardController extends Controller
 
             $salesQuery = EggSale::whereBetween('date', [$dayStart, $dayEnd]);
             $salesPieces = (clone $salesQuery)->where('unit_type', 'piece')->sum('quantity_sold');
-            $salesCrates = (clone $salesQuery)->where('unit_type', 'crate')->sum('quantity_sold');
+            $salesCrates = (clone $salesQuery)->whereIn('unit_type', ['crate', 'tray'])->sum('quantity_sold');
             $sales[] = (int) ($salesPieces + $salesCrates * $eggsPerCrate);
         }
 
@@ -108,5 +110,28 @@ class DashboardController extends Controller
             'production' => $production,
             'sales' => $sales,
         ];
+    }
+
+    protected function eggsPerCrate(): int
+    {
+        $eggsPerCrate = 30;
+        if (class_exists(\App\Models\PaymentSetting::class) && \Illuminate\Support\Facades\Schema::hasTable('payment_settings')) {
+            $eggsPerCrate = max(1, (int) \App\Models\PaymentSetting::getEggMarketEggsPerCrate());
+        }
+
+        return $eggsPerCrate;
+    }
+
+    protected function totalEggsInStock(int $eggsPerCrate): int
+    {
+        $totalProducedNet = (int) EggProduction::query()->get()
+            ->sum(fn ($p) => max(0, $p->eggs_collected - $p->cracked_or_damaged - $p->eggs_used_internal));
+
+        $eggSales = EggSale::query()->get();
+        $soldPieces = (int) $eggSales->where('unit_type', 'piece')->sum('quantity_sold');
+        $soldCrates = (int) $eggSales->whereIn('unit_type', ['crate', 'tray'])->sum('quantity_sold');
+        $totalSoldPieces = $soldPieces + ($soldCrates * $eggsPerCrate);
+
+        return max(0, $totalProducedNet - $totalSoldPieces);
     }
 }
