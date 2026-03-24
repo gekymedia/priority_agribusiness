@@ -16,7 +16,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class FinanceController extends Controller
 {
-    public function incomeIndex(Request $request)
+    public function index(Request $request)
     {
         $from = $request->input('from');
         $to = $request->input('to');
@@ -31,13 +31,15 @@ class FinanceController extends Controller
 
         $manualIncomes = $manualQuery->get()->map(function ($income) {
             return (object) [
-                'id' => $income->id,
-                'received_on' => $income->received_on,
+                'date' => $income->received_on,
+                'entry_type' => 'income',
                 'category' => $income->category,
                 'description' => $income->description ?? '—',
                 'amount' => (float) $income->amount,
                 'external_transaction_id' => $income->external_transaction_id,
-                'is_manual' => true,
+                'sync_route' => route('finance.income.sync', $income),
+                'can_sync' => true,
+                'source' => 'Manual',
             ];
         });
 
@@ -50,13 +52,15 @@ class FinanceController extends Controller
         }
         $eggSales = $eggSalesQuery->get()->map(function ($sale) {
             return (object) [
-                'id' => 'egg-' . $sale->id,
-                'received_on' => $sale->date,
+                'date' => $sale->date,
+                'entry_type' => 'income',
                 'category' => 'Egg Sales',
                 'description' => trim("Egg sale: {$sale->quantity_sold} {$sale->unit_type}" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
                 'amount' => (float) ($sale->quantity_sold * $sale->price_per_unit),
                 'external_transaction_id' => 'agri_egg_sale_' . $sale->id,
-                'is_manual' => false,
+                'sync_route' => null,
+                'can_sync' => false,
+                'source' => 'Auto (Sales)',
             ];
         });
 
@@ -69,13 +73,15 @@ class FinanceController extends Controller
         }
         $birdSales = $birdSalesQuery->get()->map(function ($sale) {
             return (object) [
-                'id' => 'bird-' . $sale->id,
-                'received_on' => $sale->date,
+                'date' => $sale->date,
+                'entry_type' => 'income',
                 'category' => 'Bird Sales',
                 'description' => trim("Bird sale: {$sale->quantity_sold} birds" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
                 'amount' => (float) ($sale->quantity_sold * $sale->price_per_bird),
                 'external_transaction_id' => 'agri_bird_sale_' . $sale->id,
-                'is_manual' => false,
+                'sync_route' => null,
+                'can_sync' => false,
+                'source' => 'Auto (Sales)',
             ];
         });
 
@@ -88,31 +94,56 @@ class FinanceController extends Controller
         }
         $cropSales = $cropSalesQuery->get()->map(function ($sale) {
             return (object) [
-                'id' => 'crop-' . $sale->id,
-                'received_on' => $sale->date,
+                'date' => $sale->date,
+                'entry_type' => 'income',
                 'category' => 'Crop Sales',
                 'description' => trim("Crop sale: {$sale->quantity_sold} units" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
                 'amount' => (float) ($sale->quantity_sold * $sale->price_per_unit),
                 'external_transaction_id' => 'agri_crop_sale_' . $sale->id,
-                'is_manual' => false,
+                'sync_route' => null,
+                'can_sync' => false,
+                'source' => 'Auto (Sales)',
             ];
         });
 
-        $allIncome = $manualIncomes
+        $expenseQuery = PoultryExpense::with(['farm', 'expenseCategory']);
+        if ($from) {
+            $expenseQuery->where('date', '>=', $from);
+        }
+        if ($to) {
+            $expenseQuery->where('date', '<=', $to);
+        }
+        $expenses = $expenseQuery->get()->map(function ($expense) {
+            $categoryName = $expense->expenseCategory?->name ?? ($expense->getRawOriginal('category') ?: 'Uncategorized');
+            return (object) [
+                'date' => $expense->date,
+                'entry_type' => 'expense',
+                'category' => $categoryName,
+                'description' => $expense->description ?? '—',
+                'amount' => (float) $expense->amount,
+                'external_transaction_id' => $expense->external_transaction_id,
+                'sync_route' => route('finance.expenditure.sync', $expense),
+                'can_sync' => true,
+                'source' => 'Expense',
+            ];
+        });
+
+        $rows = $manualIncomes
             ->concat($eggSales)
             ->concat($birdSales)
             ->concat($cropSales)
+            ->concat($expenses)
             ->sortByDesc(function ($row) {
-                return optional($row->received_on)->toDateString();
+                return optional($row->date)->toDateString();
             })
             ->values();
 
         $page = LengthAwarePaginator::resolveCurrentPage();
         $perPage = 20;
-        $items = $allIncome->forPage($page, $perPage)->values();
-        $incomes = new LengthAwarePaginator(
+        $items = $rows->forPage($page, $perPage)->values();
+        $ledger = new LengthAwarePaginator(
             $items,
-            $allIncome->count(),
+            $rows->count(),
             $perPage,
             $page,
             [
@@ -120,9 +151,17 @@ class FinanceController extends Controller
                 'query' => $request->query(),
             ]
         );
-        $total = (float) $allIncome->sum('amount');
 
-        return view('finance.income-index', compact('incomes', 'total'));
+        $incomeTotal = (float) $rows->where('entry_type', 'income')->sum('amount');
+        $expenseTotal = (float) $rows->where('entry_type', 'expense')->sum('amount');
+        $balance = $incomeTotal - $expenseTotal;
+
+        return view('finance.index', compact('ledger', 'incomeTotal', 'expenseTotal', 'balance'));
+    }
+
+    public function incomeIndex(Request $request)
+    {
+        return redirect()->route('finance.index', $request->query());
     }
 
     public function incomeCreate()
@@ -182,16 +221,7 @@ class FinanceController extends Controller
 
     public function expenditureIndex(Request $request)
     {
-        $query = PoultryExpense::with(['farm', 'birdBatch', 'expenseCategory']);
-        if ($request->filled('from')) {
-            $query->where('date', '>=', $request->input('from'));
-        }
-        if ($request->filled('to')) {
-            $query->where('date', '<=', $request->input('to'));
-        }
-        $expenses = $query->latest('date')->paginate(20);
-        $total = (clone $query)->sum('amount');
-        return view('finance.expenditure-index', compact('expenses', 'total'));
+        return redirect()->route('finance.index', $request->query());
     }
 
     public function expenditureSync(PoultryExpense $expense)

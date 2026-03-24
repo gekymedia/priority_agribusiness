@@ -764,15 +764,9 @@
                 </a>
             </div>
             <div class="sidebar-menu-item">
-                <a href="{{ route('finance.income.index') }}" class="sidebar-link {{ request()->routeIs('finance.income.*') ? 'active' : '' }}">
-                    <i class="fas fa-arrow-down-to-line"></i>
-                    <span>Income</span>
-                </a>
-            </div>
-            <div class="sidebar-menu-item">
-                <a href="{{ route('finance.expenditure.index') }}" class="sidebar-link {{ request()->routeIs('finance.expenditure.*') ? 'active' : '' }}">
-                    <i class="fas fa-arrow-up-from-line"></i>
-                    <span>Expenditure (Bank)</span>
+                <a href="{{ route('finance.index') }}" class="sidebar-link {{ request()->routeIs('finance.*') ? 'active' : '' }}">
+                    <i class="fas fa-wallet"></i>
+                    <span>Income & Expenses</span>
                 </a>
             </div>
             <div class="sidebar-menu-item">
