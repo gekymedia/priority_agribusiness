@@ -22,7 +22,7 @@
                         <option value="">Select Batch</option>
                         @foreach($batches as $batch)
                             <option value="{{ $batch->id }}" {{ old('bird_batch_id') == $batch->id ? 'selected' : '' }}>
-                                {{ $batch->batch_code }} - {{ $batch->farm->name }} ({{ $batch->quantity_arrived }} birds)
+                                {{ $batch->batch_code }} - {{ $batch->farm->name }} ({{ $batch->remaining_birds }} remaining)
                             </option>
                         @endforeach
                     </select>

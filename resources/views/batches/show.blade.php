@@ -60,6 +60,9 @@
                         <strong>Quantity Arrived:</strong> <span class="badge bg-success">{{ number_format($batch->quantity_arrived) }}</span>
                     </div>
                     <div class="col-md-6">
+                        <strong>Remaining Birds:</strong> <span class="badge bg-primary">{{ number_format($batch->remaining_birds) }}</span>
+                    </div>
+                    <div class="col-md-6">
                         <strong>Breed:</strong> {{ $batch->breed ?? 'N/A' }}
                     </div>
                     <div class="col-md-6">

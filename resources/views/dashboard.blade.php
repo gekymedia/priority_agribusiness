@@ -51,8 +51,8 @@
             <div class="agri-card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <h6 class="text-muted mb-1">Total Birds</h6>
-                        <h3 class="mb-0">{{ \App\Models\BirdBatch::sum('quantity_arrived') }}</h3>
+                        <h6 class="text-muted mb-1">Remaining Birds</h6>
+                        <h3 class="mb-0">{{ number_format($totalRemainingBirds ?? 0) }}</h3>
                     </div>
                     <div style="width: 60px; height: 60px; background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 193, 7, 0.1)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                         <i class="fas fa-dove fa-2x" style="color: var(--secondary);"></i>

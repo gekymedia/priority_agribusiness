@@ -107,4 +107,24 @@ class BirdBatch extends Model
     {
         return $this->hasMany(PoultryIncome::class);
     }
+
+    /**
+     * Total birds removed from the batch (mortality + culled + sold).
+     */
+    public function getTotalRemovedAttribute(): int
+    {
+        $mortality = (int) ($this->daily_records_sum_mortality_count ?? $this->dailyRecords()->sum('mortality_count'));
+        $culled = (int) ($this->daily_records_sum_cull_count ?? $this->dailyRecords()->sum('cull_count'));
+        $sold = (int) ($this->bird_sales_sum_quantity_sold ?? $this->birdSales()->sum('quantity_sold'));
+
+        return $mortality + $culled + $sold;
+    }
+
+    /**
+     * Current live birds remaining in this batch.
+     */
+    public function getRemainingBirdsAttribute(): int
+    {
+        return max(0, (int) $this->quantity_arrived - $this->total_removed);
+    }
 }

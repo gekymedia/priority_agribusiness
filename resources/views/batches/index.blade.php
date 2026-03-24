@@ -35,7 +35,7 @@
             <th><a href="{{ $sortUrl('house') }}" class="text-decoration-none text-dark">House</a><i class="fas{{ $sortIcon('house') }} ms-1"></i></th>
             <th><a href="{{ $sortUrl('purpose') }}" class="text-decoration-none text-dark">Purpose</a><i class="fas{{ $sortIcon('purpose') }} ms-1"></i></th>
             <th><a href="{{ $sortUrl('arrival_date') }}" class="text-decoration-none text-dark">Arrival Date</a><i class="fas{{ $sortIcon('arrival_date') }} ms-1"></i></th>
-            <th><a href="{{ $sortUrl('quantity_arrived') }}" class="text-decoration-none text-dark">Quantity</a><i class="fas{{ $sortIcon('quantity_arrived') }} ms-1"></i></th>
+            <th><a href="{{ $sortUrl('quantity_arrived') }}" class="text-decoration-none text-dark">Remaining Birds</a><i class="fas{{ $sortIcon('quantity_arrived') }} ms-1"></i></th>
             <th><a href="{{ $sortUrl('status') }}" class="text-decoration-none text-dark">Status</a><i class="fas{{ $sortIcon('status') }} ms-1"></i></th>
             <th>Actions</th>
         </tr>
@@ -48,7 +48,7 @@
                         <td>{{ $batch->house->name ?? 'N/A' }}</td>
                         <td><span class="badge bg-primary">{{ ucfirst($batch->purpose) }}</span></td>
                         <td>{{ \Carbon\Carbon::parse($batch->arrival_date)->format('M d, Y') }}</td>
-                        <td><span class="badge bg-success">{{ number_format($batch->quantity_arrived) }}</span></td>
+                        <td><span class="badge bg-success">{{ number_format($batch->remaining_birds) }}</span></td>
                         <td>
                             @if($batch->status == 'active')
                                 <span class="badge bg-success">{{ ucfirst($batch->status) }}</span>

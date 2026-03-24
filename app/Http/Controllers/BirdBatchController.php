@@ -20,7 +20,11 @@ class BirdBatchController extends Controller
             $sort = 'batch_code';
         }
 
-        $query = BirdBatch::query()->with(['farm', 'house']);
+        $query = BirdBatch::query()
+            ->with(['farm', 'house'])
+            ->withSum('dailyRecords', 'mortality_count')
+            ->withSum('dailyRecords', 'cull_count')
+            ->withSum('birdSales', 'quantity_sold');
         switch ($sort) {
             case 'batch_code':
             case 'purpose':
@@ -83,6 +87,9 @@ class BirdBatchController extends Controller
 
     public function show(BirdBatch $batch)
     {
+        $batch->loadSum('dailyRecords', 'mortality_count');
+        $batch->loadSum('dailyRecords', 'cull_count');
+        $batch->loadSum('birdSales', 'quantity_sold');
         return view('batches.show', ['batch' => $batch]);
     }
 

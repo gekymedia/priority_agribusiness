@@ -64,6 +64,9 @@ class BirdMortalityController extends Controller
     {
         $batches = BirdBatch::where('status', 'active')
             ->with('house.farm')
+            ->withSum('dailyRecords', 'mortality_count')
+            ->withSum('dailyRecords', 'cull_count')
+            ->withSum('birdSales', 'quantity_sold')
             ->orderBy('batch_code')
             ->get();
 
@@ -95,6 +98,9 @@ class BirdMortalityController extends Controller
     public function edit(BirdBatchRecord $bird_mortality)
     {
         $batches = BirdBatch::with('house.farm')
+            ->withSum('dailyRecords', 'mortality_count')
+            ->withSum('dailyRecords', 'cull_count')
+            ->withSum('birdSales', 'quantity_sold')
             ->orderBy('batch_code')
             ->get();
 

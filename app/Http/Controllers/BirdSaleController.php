@@ -45,7 +45,11 @@ class BirdSaleController extends Controller
 
     public function create()
     {
-        $batches = BirdBatch::with('farm')->get();
+        $batches = BirdBatch::with('farm')
+            ->withSum('dailyRecords', 'mortality_count')
+            ->withSum('dailyRecords', 'cull_count')
+            ->withSum('birdSales', 'quantity_sold')
+            ->get();
         return view('bird-sales.create', compact('batches'));
     }
 
@@ -87,7 +91,11 @@ class BirdSaleController extends Controller
 
     public function edit(BirdSale $birdSale)
     {
-        $batches = BirdBatch::with('farm')->get();
+        $batches = BirdBatch::with('farm')
+            ->withSum('dailyRecords', 'mortality_count')
+            ->withSum('dailyRecords', 'cull_count')
+            ->withSum('birdSales', 'quantity_sold')
+            ->get();
         return view('bird-sales.edit', compact('birdSale', 'batches'));
     }
 

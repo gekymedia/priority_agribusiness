@@ -24,6 +24,7 @@
                                 @if($batch->house)
                                     - {{ $batch->house->name }} ({{ $batch->house->farm->name ?? '' }})
                                 @endif
+                                - {{ number_format($batch->remaining_birds) }} remaining
                             </option>
                         @endforeach
                     </select>

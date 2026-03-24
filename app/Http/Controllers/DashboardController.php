@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\EggProduction;
 use App\Models\EggSale;
 use App\Models\Income;
+use App\Models\BirdBatch;
 use App\Models\PoultryExpense;
 use App\Services\PriorityBankIntegrationService;
 use Carbon\Carbon;
@@ -16,6 +17,12 @@ class DashboardController extends Controller
         $chart = $this->buildEggProductionVsSalesChart(31);
         $eggsProducedToday = $this->eggsProducedToday();
         $eggsSoldToday = $this->eggsSoldToday();
+        $totalRemainingBirds = (int) BirdBatch::query()
+            ->withSum('dailyRecords', 'mortality_count')
+            ->withSum('dailyRecords', 'cull_count')
+            ->withSum('birdSales', 'quantity_sold')
+            ->get()
+            ->sum(fn (BirdBatch $batch) => $batch->remaining_birds);
 
         $totalIncome = \Illuminate\Support\Facades\Schema::hasTable('incomes')
             ? (float) Income::sum('amount')
@@ -38,6 +45,7 @@ class DashboardController extends Controller
             'chart',
             'eggsProducedToday',
             'eggsSoldToday',
+            'totalRemainingBirds',
             'incomeExpenditureBalance',
             'bankBalance'
         ));
