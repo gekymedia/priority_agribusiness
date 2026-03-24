@@ -141,6 +141,49 @@
     </div>
 </div>
 
+<!-- Egg Stock By Batch -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="agri-card">
+            <div class="agri-card-header">
+                <h3><i class="fas fa-boxes me-2"></i>Egg Stock by Batch</h3>
+            </div>
+            <div class="agri-card-body">
+                @if(($eggStockByBatch ?? collect())->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Batch</th>
+                                    <th>Farm</th>
+                                    <th>Eggs In Stock</th>
+                                    <th>Grouped (Crates + Loose)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($eggStockByBatch as $row)
+                                    <tr>
+                                        <td><strong>{{ $row['batch_code'] }}</strong></td>
+                                        <td>{{ $row['farm_name'] }}</td>
+                                        <td><span class="badge bg-success">{{ number_format($row['eggs_in_stock']) }}</span></td>
+                                        <td>{{ number_format($row['crates']) }} crates + {{ number_format($row['loose_eggs']) }} eggs</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <small class="text-muted">Crate conversion uses {{ $eggsPerCrate ?? 30 }} eggs per crate.</small>
+                @else
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">No egg stock data yet.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Main Content Row -->
 <div class="row g-4">
     <!-- Recent Activity -->

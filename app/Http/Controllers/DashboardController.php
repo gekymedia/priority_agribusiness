@@ -21,6 +21,7 @@ class DashboardController extends Controller
         $totalEggsInStock = $this->totalEggsInStock($eggsPerCrate);
         $eggsInStockCrates = intdiv($totalEggsInStock, $eggsPerCrate);
         $eggsInStockLoose = $totalEggsInStock % $eggsPerCrate;
+        $eggStockByBatch = $this->eggStockByBatch($eggsPerCrate);
         $totalRemainingBirds = (int) BirdBatch::query()
             ->withSum('dailyRecords', 'mortality_count')
             ->withSum('dailyRecords', 'cull_count')
@@ -53,6 +54,7 @@ class DashboardController extends Controller
             'eggsInStockCrates',
             'eggsInStockLoose',
             'eggsPerCrate',
+            'eggStockByBatch',
             'totalRemainingBirds',
             'incomeExpenditureBalance',
             'bankBalance'
@@ -133,5 +135,41 @@ class DashboardController extends Controller
         $totalSoldPieces = $soldPieces + ($soldCrates * $eggsPerCrate);
 
         return max(0, $totalProducedNet - $totalSoldPieces);
+    }
+
+    protected function eggStockByBatch(int $eggsPerCrate): \Illuminate\Support\Collection
+    {
+        return BirdBatch::query()
+            ->whereIn('purpose', ['egg_production', 'layer'])
+            ->with('farm')
+            ->withSum('eggProductions', 'eggs_collected')
+            ->withSum('eggProductions', 'cracked_or_damaged')
+            ->withSum('eggProductions', 'eggs_used_internal')
+            ->with('eggSales:id,bird_batch_id,unit_type,quantity_sold')
+            ->get()
+            ->map(function (BirdBatch $batch) use ($eggsPerCrate) {
+                $produced = (int) ($batch->egg_productions_sum_eggs_collected ?? 0);
+                $cracked = (int) ($batch->egg_productions_sum_cracked_or_damaged ?? 0);
+                $internal = (int) ($batch->egg_productions_sum_eggs_used_internal ?? 0);
+                $netProduced = max(0, $produced - $cracked - $internal);
+
+                $soldPieces = (int) $batch->eggSales->where('unit_type', 'piece')->sum('quantity_sold');
+                $soldCrates = (int) $batch->eggSales->whereIn('unit_type', ['crate', 'tray'])->sum('quantity_sold');
+                $totalSoldPieces = $soldPieces + ($soldCrates * $eggsPerCrate);
+
+                $eggsInStock = max(0, $netProduced - $totalSoldPieces);
+
+                return [
+                    'batch_code' => $batch->batch_code,
+                    'farm_name' => $batch->farm->name ?? 'N/A',
+                    'eggs_in_stock' => $eggsInStock,
+                    'crates' => intdiv($eggsInStock, $eggsPerCrate),
+                    'loose_eggs' => $eggsInStock % $eggsPerCrate,
+                    'has_activity' => $netProduced > 0 || $totalSoldPieces > 0,
+                ];
+            })
+            ->filter(fn (array $row) => $row['has_activity'] || $row['eggs_in_stock'] > 0)
+            ->sortByDesc('eggs_in_stock')
+            ->values();
     }
 }
