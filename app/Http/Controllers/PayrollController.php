@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Payroll;
 use App\Mail\PayrollPaidMail;
+use App\Services\PayrollSalaryExpenseService;
 use App\Services\Notifications\Notifier;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -75,6 +76,8 @@ class PayrollController extends Controller
             $this->sendPayrollNotifications($payroll);
         }
 
+        app(PayrollSalaryExpenseService::class)->sync($payroll->fresh());
+
         return redirect()->route('payroll.index')->with('success', 'Payroll record created successfully.');
     }
 
@@ -114,11 +117,14 @@ class PayrollController extends Controller
             $this->sendPayrollNotifications($payroll);
         }
 
+        app(PayrollSalaryExpenseService::class)->sync($payroll->fresh());
+
         return redirect()->route('payroll.index')->with('success', 'Payroll record updated successfully.');
     }
 
     public function destroy(Payroll $payroll)
     {
+        app(PayrollSalaryExpenseService::class)->detachForDeletion($payroll);
         $payroll->delete();
         return redirect()->route('payroll.index')->with('success', 'Payroll record deleted successfully.');
     }
@@ -145,6 +151,8 @@ class PayrollController extends Controller
         if ($oldStatus !== 'paid' && $newStatus === 'paid') {
             $this->sendPayrollNotifications($payroll);
         }
+
+        app(PayrollSalaryExpenseService::class)->sync($payroll->fresh());
 
         return response()->json([
             'status' => $payroll->status,

@@ -2,13 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BirdBatch;
+use App\Models\BirdSale;
+use App\Models\CropInputExpense;
+use App\Models\CropSale;
 use App\Models\EggProduction;
 use App\Models\EggSale;
 use App\Models\Income;
-use App\Models\BirdBatch;
+use App\Models\Payroll;
+use App\Models\Planting;
 use App\Models\PoultryExpense;
+use App\Models\Task;
 use App\Services\PriorityBankIntegrationService;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
@@ -29,7 +38,7 @@ class DashboardController extends Controller
             ->get()
             ->sum(fn (BirdBatch $batch) => $batch->remaining_birds);
 
-        $totalIncome = \Illuminate\Support\Facades\Schema::hasTable('incomes')
+        $totalIncome = Schema::hasTable('incomes')
             ? (float) Income::sum('amount')
             : 0.0;
         $totalExpenditure = (float) PoultryExpense::sum('amount');
@@ -46,6 +55,9 @@ class DashboardController extends Controller
             // Leave bankBalance null on failure
         }
 
+        $activityFinancialSummary = $this->financialActivitySummary(7);
+        $recentActivities = $this->buildRecentActivity(15);
+
         return view('dashboard', compact(
             'chart',
             'eggsProducedToday',
@@ -57,8 +69,180 @@ class DashboardController extends Controller
             'eggStockByBatch',
             'totalRemainingBirds',
             'incomeExpenditureBalance',
-            'bankBalance'
+            'bankBalance',
+            'activityFinancialSummary',
+            'recentActivities'
         ));
+    }
+
+    /**
+     * Income and expense totals for the last N days (for Recent Activity summary).
+     */
+    protected function financialActivitySummary(int $days): array
+    {
+        $from = Carbon::now()->subDays($days - 1)->startOfDay();
+        $to = Carbon::now()->endOfDay();
+
+        $income = $this->sumAllIncomeBetween($from, $to);
+        $expense = (float) PoultryExpense::whereBetween('date', [$from, $to])->sum('amount');
+        if (Schema::hasTable('crop_input_expenses')) {
+            $expense += (float) CropInputExpense::whereBetween('date', [$from, $to])->sum('amount');
+        }
+
+        return [
+            'days' => $days,
+            'income' => $income,
+            'expenses' => $expense,
+            'net' => $income - $expense,
+        ];
+    }
+
+    protected function sumAllIncomeBetween(Carbon $from, Carbon $to): float
+    {
+        $total = 0.0;
+        if (Schema::hasTable('incomes')) {
+            $total += (float) Income::whereBetween('received_on', [$from->toDateString(), $to->toDateString()])->sum('amount');
+        }
+        $total += (float) EggSale::whereBetween('date', [$from, $to])->get()
+            ->sum(fn (EggSale $s) => (float) $s->quantity_sold * (float) $s->price_per_unit);
+        $total += (float) BirdSale::whereBetween('date', [$from, $to])->get()
+            ->sum(fn (BirdSale $s) => (float) $s->quantity_sold * (float) $s->price_per_bird);
+        $total += (float) CropSale::whereBetween('date', [$from, $to])->get()
+            ->sum(fn (CropSale $s) => (float) $s->quantity_sold * (float) $s->price_per_unit);
+
+        return $total;
+    }
+
+    /**
+     * Mixed recent activity: financial records, payroll, tasks, plantings, crop inputs (no bird-batch spam).
+     *
+     * @return Collection<int, array{sort_at: \Carbon\Carbon, title: string, subtitle: string, badge: string, badge_class: string, icon: string, icon_style: string}>
+     */
+    protected function buildRecentActivity(int $limit): Collection
+    {
+        $items = collect();
+
+        foreach (PoultryExpense::with('expenseCategory', 'farm')->latest()->take(6)->get() as $e) {
+            $cat = $e->expenseCategory?->name ?? ($e->getRawOriginal('category') ?: 'Expense');
+            $items->push([
+                'sort_at' => $e->created_at ?? Carbon::parse($e->date),
+                'title' => 'Poultry expense',
+                'subtitle' => $cat . ' · ₵' . number_format((float) $e->amount, 2) . ($e->description ? ' — ' . Str::limit($e->description, 55) : '') . ($e->farm ? ' · ' . $e->farm->name : ''),
+                'badge' => 'Expense',
+                'badge_class' => 'danger',
+                'icon' => 'fa-arrow-up',
+                'icon_style' => 'linear-gradient(135deg, rgba(244, 67, 54, 0.12), rgba(239, 83, 80, 0.12))',
+            ]);
+        }
+
+        if (Schema::hasTable('incomes')) {
+            foreach (Income::query()->orderByDesc('received_on')->take(5)->get() as $inc) {
+                $items->push([
+                    'sort_at' => Carbon::parse($inc->received_on)->endOfDay(),
+                    'title' => 'Income recorded',
+                    'subtitle' => ($inc->category ?? 'Income') . ' · ₵' . number_format((float) $inc->amount, 2) . ($inc->description ? ' — ' . Str::limit($inc->description, 55) : ''),
+                    'badge' => 'Income',
+                    'badge_class' => 'success',
+                    'icon' => 'fa-arrow-down',
+                    'icon_style' => 'linear-gradient(135deg, rgba(46, 125, 50, 0.12), rgba(139, 195, 74, 0.12))',
+                ]);
+            }
+        }
+
+        foreach (EggSale::with('birdBatch.farm')->latest()->take(4)->get() as $sale) {
+            $amt = (float) $sale->quantity_sold * (float) $sale->price_per_unit;
+            $items->push([
+                'sort_at' => $sale->created_at ?? Carbon::parse($sale->date),
+                'title' => 'Egg sale',
+                'subtitle' => '₵' . number_format($amt, 2) . ' · ' . $sale->quantity_sold . ' ' . $sale->unit_type . ($sale->buyer_name ? ' · ' . $sale->buyer_name : ''),
+                'badge' => 'Sales',
+                'badge_class' => 'success',
+                'icon' => 'fa-egg',
+                'icon_style' => 'linear-gradient(135deg, rgba(46, 125, 50, 0.12), rgba(139, 195, 74, 0.12))',
+            ]);
+        }
+
+        foreach (BirdSale::with('birdBatch')->latest()->take(3)->get() as $sale) {
+            $amt = (float) $sale->quantity_sold * (float) $sale->price_per_bird;
+            $items->push([
+                'sort_at' => $sale->created_at ?? Carbon::parse($sale->date),
+                'title' => 'Bird sale',
+                'subtitle' => '₵' . number_format($amt, 2) . ' · ' . $sale->quantity_sold . ' birds' . ($sale->buyer_name ? ' · ' . $sale->buyer_name : ''),
+                'badge' => 'Sales',
+                'badge_class' => 'success',
+                'icon' => 'fa-dove',
+                'icon_style' => 'linear-gradient(135deg, rgba(46, 125, 50, 0.12), rgba(139, 195, 74, 0.12))',
+            ]);
+        }
+
+        foreach (CropSale::latest()->take(3)->get() as $sale) {
+            $amt = (float) $sale->quantity_sold * (float) $sale->price_per_unit;
+            $items->push([
+                'sort_at' => $sale->created_at ?? Carbon::parse($sale->date),
+                'title' => 'Crop sale',
+                'subtitle' => '₵' . number_format($amt, 2) . ' · ' . $sale->quantity_sold . ' units' . ($sale->buyer_name ? ' · ' . $sale->buyer_name : ''),
+                'badge' => 'Sales',
+                'badge_class' => 'success',
+                'icon' => 'fa-coins',
+                'icon_style' => 'linear-gradient(135deg, rgba(255, 152, 0, 0.12), rgba(255, 193, 7, 0.12))',
+            ]);
+        }
+
+        if (Schema::hasTable('crop_input_expenses')) {
+            foreach (CropInputExpense::latest()->take(4)->get() as $ce) {
+                $items->push([
+                    'sort_at' => $ce->created_at ?? Carbon::parse($ce->date),
+                    'title' => 'Crop input expense',
+                    'subtitle' => ($ce->category ?? 'Expense') . ' · ₵' . number_format((float) $ce->amount, 2) . ($ce->description ? ' — ' . Str::limit($ce->description, 50) : ''),
+                    'badge' => 'Expense',
+                    'badge_class' => 'danger',
+                    'icon' => 'fa-leaf',
+                    'icon_style' => 'linear-gradient(135deg, rgba(255, 152, 0, 0.12), rgba(255, 193, 7, 0.12))',
+                ]);
+            }
+        }
+
+        if (Schema::hasTable('payrolls')) {
+            foreach (Payroll::with('employee')->where('status', 'paid')->whereNotNull('paid_at')->orderByDesc('paid_at')->take(4)->get() as $pr) {
+                $name = $pr->employee?->full_name ?? 'Employee';
+                $period = Carbon::parse($pr->pay_period)->format('M Y');
+                $items->push([
+                    'sort_at' => Carbon::parse($pr->paid_at),
+                    'title' => 'Salary paid',
+                    'subtitle' => $name . ' · ₵' . number_format((float) $pr->net_pay, 2) . ' · ' . $period,
+                    'badge' => 'Payroll',
+                    'badge_class' => 'primary',
+                    'icon' => 'fa-money-bill-wave',
+                    'icon_style' => 'linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(56, 189, 248, 0.12))',
+                ]);
+            }
+        }
+
+        foreach (Task::query()->latest('updated_at')->take(5)->get() as $task) {
+            $items->push([
+                'sort_at' => $task->updated_at ?? $task->created_at,
+                'title' => 'Task: ' . Str::limit($task->title, 45),
+                'subtitle' => ucfirst($task->status ?? 'open') . ($task->due_date ? ' · due ' . Carbon::parse($task->due_date)->format('M j') : ''),
+                'badge' => 'Task',
+                'badge_class' => $task->status === 'pending' ? 'warning' : 'secondary',
+                'icon' => 'fa-tasks',
+                'icon_style' => 'linear-gradient(135deg, rgba(103, 58, 183, 0.12), rgba(156, 39, 176, 0.12))',
+            ]);
+        }
+
+        foreach (Planting::latest()->take(3)->get() as $planting) {
+            $items->push([
+                'sort_at' => $planting->created_at,
+                'title' => 'Planting',
+                'subtitle' => ($planting->crop_name ?? 'Crop') . ' · ' . ucfirst($planting->status ?? 'active'),
+                'badge' => 'Crop',
+                'badge_class' => 'warning',
+                'icon' => 'fa-seedling',
+                'icon_style' => 'linear-gradient(135deg, rgba(255, 152, 0, 0.12), rgba(255, 193, 7, 0.12))',
+            ]);
+        }
+
+        return $items->sortByDesc(fn (array $row) => $row['sort_at']->timestamp)->values()->take($limit);
     }
 
     protected function eggsProducedToday(): int

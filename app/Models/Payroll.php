@@ -17,6 +17,7 @@ class Payroll extends Model
         'status',
         'paid_at',
         'notes',
+        'poultry_expense_id',
     ];
 
     protected $casts = [
@@ -31,5 +32,10 @@ class Payroll extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function salaryExpense(): BelongsTo
+    {
+        return $this->belongsTo(PoultryExpense::class, 'poultry_expense_id');
     }
 }

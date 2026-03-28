@@ -193,82 +193,56 @@
                 <h3><i class="fas fa-clock me-2"></i>Recent Activity</h3>
             </div>
             <div class="agri-card-body">
+                @if(isset($activityFinancialSummary))
+                    <div class="rounded-3 p-3 mb-4" style="background: linear-gradient(135deg, rgba(46, 125, 50, 0.06), rgba(14, 165, 233, 0.06)); border: 1px solid rgba(0,0,0,0.06);">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <span class="small text-muted text-uppercase fw-semibold"><i class="fas fa-chart-pie me-1"></i> Last {{ $activityFinancialSummary['days'] }} days</span>
+                        </div>
+                        <div class="row g-3 text-center text-md-start">
+                            <div class="col-md-4">
+                                <div class="small text-muted">Income (all sources)</div>
+                                <div class="fw-semibold text-success">₵{{ number_format($activityFinancialSummary['income'], 2) }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="small text-muted">Expenses</div>
+                                <div class="fw-semibold text-danger">₵{{ number_format($activityFinancialSummary['expenses'], 2) }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="small text-muted">Net</div>
+                                <div class="fw-semibold {{ ($activityFinancialSummary['net'] ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">₵{{ number_format($activityFinancialSummary['net'], 2) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="list-group list-group-flush">
-                    @php
-                        $recentBatches = \App\Models\BirdBatch::latest()->take(5)->get();
-                        $recentPlantings = \App\Models\Planting::latest()->take(5)->get();
-                        $recentTasks = \App\Models\Task::latest()->take(5)->get();
-                    @endphp
-
-                    @if($recentBatches->count() > 0)
-                        @foreach($recentBatches->take(3) as $batch)
+                    @forelse($recentActivities ?? [] as $activity)
                         <div class="list-group-item border-0 px-0 py-3">
                             <div class="d-flex align-items-center">
-                                <div style="width: 45px; height: 45px; background: linear-gradient(135deg, rgba(46, 125, 50, 0.1), rgba(139, 195, 74, 0.1)); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                                    <i class="fas fa-dove" style="color: var(--primary);"></i>
+                                <div style="width: 45px; height: 45px; background: {{ $activity['icon_style'] ?? 'linear-gradient(135deg, rgba(46, 125, 50, 0.1), rgba(139, 195, 74, 0.1))' }}; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                    <i class="fas {{ $activity['icon'] ?? 'fa-circle' }}" style="color: var(--primary);"></i>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">New Bird Batch: {{ $batch->batch_code }}</h6>
-                                    <small class="text-muted">{{ $batch->created_at->diffForHumans() }}</small>
+                                <div class="flex-grow-1 min-w-0">
+                                    <h6 class="mb-1">{{ $activity['title'] }}</h6>
+                                    <small class="text-muted d-block text-truncate" title="{{ $activity['subtitle'] ?? '' }}">{{ $activity['subtitle'] ?? '' }}</small>
+                                    <small class="text-muted">{{ $activity['sort_at']->diffForHumans() }}</small>
                                 </div>
-                                <span class="badge bg-success bg-opacity-10 text-success">{{ $batch->status }}</span>
+                                <span class="badge bg-{{ $activity['badge_class'] ?? 'secondary' }} bg-opacity-10 text-{{ $activity['badge_class'] ?? 'secondary' }} ms-2">{{ $activity['badge'] ?? '' }}</span>
                             </div>
                         </div>
-                        @endforeach
-                    @endif
-
-                    @if($recentPlantings->count() > 0)
-                        @foreach($recentPlantings->take(2) as $planting)
-                        <div class="list-group-item border-0 px-0 py-3">
-                            <div class="d-flex align-items-center">
-                                <div style="width: 45px; height: 45px; background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 193, 7, 0.1)); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                                    <i class="fas fa-leaf" style="color: var(--secondary);"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">New Planting: {{ $planting->crop_name }}</h6>
-                                    <small class="text-muted">{{ $planting->created_at->diffForHumans() }}</small>
-                                </div>
-                                <span class="badge bg-warning bg-opacity-10 text-warning">{{ $planting->status }}</span>
-                            </div>
-                        </div>
-                        @endforeach
-                    @endif
-
-                    @if($recentBatches->count() == 0 && $recentPlantings->count() == 0)
+                    @empty
                         <div class="text-center py-5">
                             <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">No recent activity</p>
+                            <p class="text-muted mb-0">No recent activity yet. Record income, expenses, or tasks to see them here.</p>
                         </div>
-                    @endif
+                    @endforelse
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions & Pending Tasks -->
+    <!-- Pending Tasks -->
     <div class="col-lg-4">
-        <div class="agri-card mb-4">
-            <div class="agri-card-header">
-                <h3><i class="fas fa-bolt me-2"></i>Quick Actions</h3>
-            </div>
-            <div class="agri-card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ route('farms.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Add New Farm
-                    </a>
-                    <a href="{{ route('batches.create') }}" class="btn btn-success">
-                        <i class="fas fa-dove me-2"></i>Add Bird Batch
-                    </a>
-                    <a href="{{ route('plantings.create') }}" class="btn btn-warning">
-                        <i class="fas fa-seedling me-2"></i>New Planting
-                    </a>
-                    <a href="{{ route('tasks.create') }}" class="btn btn-info">
-                        <i class="fas fa-tasks me-2"></i>Create Task
-                    </a>
-                </div>
-            </div>
-        </div>
-
         <div class="agri-card">
             <div class="agri-card-header" style="background: linear-gradient(135deg, rgba(244, 67, 54, 0.9), rgba(239, 83, 80, 0.9));">
                 <h3><i class="fas fa-exclamation-triangle me-2"></i>Pending Tasks</h3>
@@ -310,73 +284,6 @@
                     <div class="text-center py-4">
                         <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
                         <p class="text-muted mb-0">No pending tasks!</p>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Farm Overview -->
-<div class="row g-4 mt-2">
-    <div class="col-12">
-        <div class="agri-card">
-            <div class="agri-card-header">
-                <h3><i class="fas fa-tractor me-2"></i>Farm Overview</h3>
-            </div>
-            <div class="agri-card-body">
-                @php
-                    $farms = \App\Models\Farm::with(['houses', 'fields'])->get();
-                @endphp
-
-                @if($farms->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Farm Name</th>
-                                    <th>Type</th>
-                                    <th>Location</th>
-                                    <th>Houses</th>
-                                    <th>Fields</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($farms as $farm)
-                                <tr>
-                                    <td>
-                                        <strong>{{ $farm->name }}</strong>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-{{ $farm->farm_type == 'poultry' ? 'primary' : ($farm->farm_type == 'crop' ? 'success' : 'warning') }} bg-opacity-10 text-{{ $farm->farm_type == 'poultry' ? 'primary' : ($farm->farm_type == 'crop' ? 'success' : 'warning') }}">
-                                            {{ ucfirst($farm->farm_type) }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $farm->location ?? 'N/A' }}</td>
-                                    <td>{{ $farm->houses->count() }}</td>
-                                    <td>{{ $farm->fields->count() }}</td>
-                                    <td>
-                                        <span class="badge bg-success bg-opacity-10 text-success">Active</span>
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('farms.show', $farm) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <div class="text-center py-5">
-                        <i class="fas fa-tractor fa-3x text-muted mb-3"></i>
-                        <p class="text-muted mb-3">No farms registered yet</p>
-                        <a href="{{ route('farms.create') }}" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>Create Your First Farm
-                        </a>
                     </div>
                 @endif
             </div>
