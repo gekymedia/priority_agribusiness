@@ -56,9 +56,9 @@
                         <i class="fas fa-box me-2"></i>Unit Type
                     </label>
                     <select name="unit_type" id="unit_type" class="form-select @error('unit_type') is-invalid @enderror" required>
-                        <option value="tray" {{ old('unit_type') == 'tray' ? 'selected' : '' }}>Tray</option>
+                        <option value="tray" {{ old('unit_type', 'crate') == 'tray' ? 'selected' : '' }}>Tray</option>
                         <option value="piece" {{ old('unit_type') == 'piece' ? 'selected' : '' }}>Piece</option>
-                        <option value="crate" {{ old('unit_type') == 'crate' ? 'selected' : '' }}>Crate</option>
+                        <option value="crate" {{ old('unit_type', 'crate') == 'crate' ? 'selected' : '' }}>Crate</option>
                     </select>
                     @error('unit_type')
                         <div class="invalid-feedback">{{ $message }}</div>
