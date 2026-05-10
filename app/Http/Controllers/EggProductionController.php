@@ -11,6 +11,62 @@ use Illuminate\Http\Request;
 class EggProductionController extends Controller
 {
     /**
+     * Validate request and normalize egg totals when size breakdown is enabled.
+     * Total eggs = large + medium + small + cracked + internal (good eggs split by size).
+     *
+     * @return array<string, mixed>
+     */
+    protected function validatedEggProductionForSave(Request $request): array
+    {
+        $breakdown = $request->boolean('egg_size_breakdown');
+
+        if ($breakdown) {
+            foreach (['eggs_large', 'eggs_medium', 'eggs_small'] as $field) {
+                $v = $request->input($field);
+                if ($v === '' || $v === null) {
+                    $request->merge([$field => 0]);
+                }
+            }
+        }
+
+        $rules = [
+            'bird_batch_id' => 'required|exists:bird_batches,id',
+            'date' => 'required|date',
+            'cracked_or_damaged' => 'required|integer|min:0',
+            'eggs_used_internal' => 'required|integer|min:0',
+            'notes' => 'nullable|string',
+        ];
+
+        if ($breakdown) {
+            $rules['eggs_large'] = 'nullable|integer|min:0';
+            $rules['eggs_medium'] = 'nullable|integer|min:0';
+            $rules['eggs_small'] = 'nullable|integer|min:0';
+        } else {
+            $rules['eggs_collected'] = 'required|integer|min:0';
+        }
+
+        $data = $request->validate($rules);
+
+        if ($breakdown) {
+            $large = (int) ($data['eggs_large'] ?? 0);
+            $medium = (int) ($data['eggs_medium'] ?? 0);
+            $small = (int) ($data['eggs_small'] ?? 0);
+            $cracked = (int) $data['cracked_or_damaged'];
+            $internal = (int) $data['eggs_used_internal'];
+
+            $data['egg_size_breakdown'] = true;
+            $data['eggs_collected'] = $large + $medium + $small + $cracked + $internal;
+        } else {
+            $data['egg_size_breakdown'] = false;
+            $data['eggs_large'] = 0;
+            $data['eggs_medium'] = 0;
+            $data['eggs_small'] = 0;
+        }
+
+        return $data;
+    }
+
+    /**
      * Parse bulk import text: supports bracket format [date, eggs_collected, cracked_or_damaged, notes]
      * and caretaker-style lines (e.g. "19th January 0 eggs"). Returns array of rows for DB insert.
      */
@@ -260,14 +316,7 @@ class EggProductionController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'bird_batch_id' => 'required|exists:bird_batches,id',
-            'date' => 'required|date',
-            'eggs_collected' => 'required|integer|min:0',
-            'cracked_or_damaged' => 'required|integer|min:0',
-            'eggs_used_internal' => 'required|integer|min:0',
-            'notes' => 'nullable|string',
-        ]);
+        $data = $this->validatedEggProductionForSave($request);
 
         $record = EggProduction::create($data);
 
@@ -292,14 +341,7 @@ class EggProductionController extends Controller
 
     public function update(Request $request, EggProduction $eggProduction)
     {
-        $data = $request->validate([
-            'bird_batch_id' => 'required|exists:bird_batches,id',
-            'date' => 'required|date',
-            'eggs_collected' => 'required|integer|min:0',
-            'cracked_or_damaged' => 'required|integer|min:0',
-            'eggs_used_internal' => 'required|integer|min:0',
-            'notes' => 'nullable|string',
-        ]);
+        $data = $this->validatedEggProductionForSave($request);
 
         $eggProduction->update($data);
 

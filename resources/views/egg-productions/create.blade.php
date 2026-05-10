@@ -41,7 +41,16 @@
                     @enderror
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-12">
+                    <input type="hidden" name="egg_size_breakdown" value="0">
+                    <div class="form-check form-switch mb-2">
+                        <input type="checkbox" name="egg_size_breakdown" id="egg_size_breakdown" class="form-check-input" value="1" {{ old('egg_size_breakdown') == '1' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="egg_size_breakdown">Record saleable eggs by size (large / medium / small)</label>
+                    </div>
+                    <p class="text-muted small mb-0" id="egg_breakdown_hint" style="display:none;">Large, medium, and small count only the eggs left after cracked and internal use are accounted for in the total. Total collected is calculated automatically.</p>
+                </div>
+
+                <div class="col-md-4" id="egg_total_manual_wrap">
                     <label for="eggs_collected" class="form-label">
                         <i class="fas fa-egg me-2"></i>Total Eggs Collected
                     </label>
@@ -71,6 +80,33 @@
                     @enderror
                 </div>
 
+                <div class="col-12" id="egg_size_breakdown_wrap" style="display:none;">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="eggs_large" class="form-label">Large</label>
+                            <input type="number" name="eggs_large" id="eggs_large" class="form-control @error('eggs_large') is-invalid @enderror" value="{{ old('eggs_large', 0) }}" min="0">
+                            @error('eggs_large')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label for="eggs_medium" class="form-label">Medium</label>
+                            <input type="number" name="eggs_medium" id="eggs_medium" class="form-control @error('eggs_medium') is-invalid @enderror" value="{{ old('eggs_medium', 0) }}" min="0">
+                            @error('eggs_medium')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label for="eggs_small" class="form-label">Small</label>
+                            <input type="number" name="eggs_small" id="eggs_small" class="form-control @error('eggs_small') is-invalid @enderror" value="{{ old('eggs_small', 0) }}" min="0">
+                            @error('eggs_small')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <p class="mt-2 mb-0"><strong>Total eggs collected:</strong> <span id="egg_total_computed_display">0</span></p>
+                </div>
+
                 <div class="col-12">
                     <label for="notes" class="form-label">
                         <i class="fas fa-sticky-note me-2"></i>Notes
@@ -97,3 +133,49 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(function() {
+    var cb = document.getElementById('egg_size_breakdown');
+    var manualWrap = document.getElementById('egg_total_manual_wrap');
+    var breakdownWrap = document.getElementById('egg_size_breakdown_wrap');
+    var hint = document.getElementById('egg_breakdown_hint');
+    var eggsCollected = document.getElementById('eggs_collected');
+    var cracked = document.getElementById('cracked_or_damaged');
+    var internal = document.getElementById('eggs_used_internal');
+    var large = document.getElementById('eggs_large');
+    var medium = document.getElementById('eggs_medium');
+    var small = document.getElementById('eggs_small');
+    var totalDisplay = document.getElementById('egg_total_computed_display');
+    if (!cb || !manualWrap || !breakdownWrap) return;
+
+    function num(el) { return parseInt(el.value, 10) || 0; }
+
+    function syncBreakdownUi() {
+        var on = cb.checked;
+        manualWrap.style.display = on ? 'none' : '';
+        breakdownWrap.style.display = on ? '' : 'none';
+        if (hint) hint.style.display = on ? '' : 'none';
+        if (eggsCollected) {
+            eggsCollected.required = !on;
+            eggsCollected.disabled = on;
+            if (!on) eggsCollected.removeAttribute('disabled');
+        }
+        if (on) updateComputedTotal();
+    }
+
+    function updateComputedTotal() {
+        if (!totalDisplay) return;
+        var t = num(large) + num(medium) + num(small) + num(cracked) + num(internal);
+        totalDisplay.textContent = t.toLocaleString();
+    }
+
+    cb.addEventListener('change', syncBreakdownUi);
+    [cracked, internal, large, medium, small].forEach(function(el) {
+        if (el) el.addEventListener('input', updateComputedTotal);
+    });
+    syncBreakdownUi();
+})();
+</script>
+@endpush

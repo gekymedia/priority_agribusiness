@@ -171,6 +171,7 @@ class PayrollController extends Controller
         $period = Carbon::parse($payroll->pay_period)->format('M Y');
         $netPay = number_format((float) $payroll->net_pay, 2);
         $appName = config('app.name');
+        $phone = !empty($employee->phone) ? $this->normalizeGhanaPhone($employee->phone) : null;
 
         // Email notification
         if (!empty($employee->email)) {
@@ -183,27 +184,75 @@ class PayrollController extends Controller
         }
 
         // SMS notification
-        if (!empty($employee->phone)) {
+        if (!empty($phone)) {
             try {
                 $notifier = app(Notifier::class);
                 $smsMsg = "Hi {$employee->full_name}, your salary for {$period} has been PAID. Net: GHS {$netPay}. - {$appName}";
-                $notifier->sms($employee->phone, $smsMsg);
-                Log::info('Payroll paid SMS sent', ['employee_id' => $employee->id, 'payroll_id' => $payroll->id]);
+                $result = $notifier->sms($phone, $smsMsg);
+
+                if (($result['success'] ?? false) === true) {
+                    Log::info('Payroll paid SMS sent', [
+                        'employee_id' => $employee->id,
+                        'payroll_id' => $payroll->id,
+                        'phone' => $phone,
+                    ]);
+                } else {
+                    Log::warning('Payroll paid SMS failed', [
+                        'employee_id' => $employee->id,
+                        'payroll_id' => $payroll->id,
+                        'phone' => $phone,
+                        'error' => $result['error'] ?? 'Unknown SMS error',
+                        'provider' => $result['provider'] ?? null,
+                    ]);
+                }
             } catch (\Throwable $e) {
                 Log::warning('Payroll paid SMS failed: ' . $e->getMessage());
             }
         }
 
         // GekyChat notification
-        if (!empty($employee->phone)) {
+        if (!empty($phone)) {
             try {
                 $notifier = app(Notifier::class);
                 $gekyChatMsg = "Hi {$employee->full_name},\n\nYour salary for {$period} has been PAID.\nNet Amount: GHS {$netPay}\n\nThank you!\n- {$appName}";
-                $notifier->gekychat($employee->phone, $gekyChatMsg);
-                Log::info('Payroll paid GekyChat sent', ['employee_id' => $employee->id, 'payroll_id' => $payroll->id]);
+                $result = $notifier->gekychat($phone, $gekyChatMsg);
+
+                if (($result['success'] ?? false) === true) {
+                    Log::info('Payroll paid GekyChat sent', [
+                        'employee_id' => $employee->id,
+                        'payroll_id' => $payroll->id,
+                        'phone' => $phone,
+                    ]);
+                } else {
+                    Log::warning('Payroll paid GekyChat failed', [
+                        'employee_id' => $employee->id,
+                        'payroll_id' => $payroll->id,
+                        'phone' => $phone,
+                        'error' => $result['error'] ?? 'Unknown GekyChat error',
+                    ]);
+                }
             } catch (\Throwable $e) {
                 Log::warning('Payroll paid GekyChat failed: ' . $e->getMessage());
             }
         }
+    }
+
+    private function normalizeGhanaPhone(string $phone): string
+    {
+        $phone = preg_replace('/[^0-9+]/', '', $phone);
+
+        if (str_starts_with($phone, '0') && strlen($phone) === 10) {
+            return '+233' . substr($phone, 1);
+        }
+
+        if (str_starts_with($phone, '233') && strlen($phone) === 12) {
+            return '+' . $phone;
+        }
+
+        if (!str_starts_with($phone, '+')) {
+            return '+' . $phone;
+        }
+
+        return $phone;
     }
 }

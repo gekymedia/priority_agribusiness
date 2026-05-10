@@ -117,8 +117,12 @@ class CrudNotificationService
         $batch = $record->birdBatch?->name ?? 'Unknown Batch';
         $eggs = $record->eggs_collected ?? 0;
         $date = $record->date ? $record->date->format('M d, Y') : 'N/A';
-        
-        return "Batch: {$batch}\nEggs Collected: {$eggs}\nDate: {$date}";
+        $lines = ["Batch: {$batch}", "Eggs Collected: {$eggs}", "Date: {$date}"];
+        if (! empty($record->egg_size_breakdown)) {
+            $lines[] = 'Sizes (L/M/S): ' . (int) ($record->eggs_large ?? 0) . ' / ' . (int) ($record->eggs_medium ?? 0) . ' / ' . (int) ($record->eggs_small ?? 0);
+        }
+
+        return implode("\n", $lines);
     }
 
     protected function eggSaleSummary(Model $record): string

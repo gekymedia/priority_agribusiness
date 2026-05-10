@@ -43,9 +43,19 @@
                     <div class="col-md-4">
                         <label class="text-muted">Available for Sale</label>
                         <p class="h6 text-success">
-                            <strong>{{ number_format($eggProduction->eggs_collected - $eggProduction->cracked_or_damaged - $eggProduction->eggs_used_internal) }}</strong>
+                            <strong>{{ number_format($eggProduction->remainingEggs()) }}</strong>
                         </p>
                     </div>
+                    @if($eggProduction->egg_size_breakdown)
+                    <div class="col-12">
+                        <label class="text-muted">Size breakdown (available eggs)</label>
+                        <p class="mb-1">
+                            <span class="me-3">Large: <strong>{{ number_format($eggProduction->eggs_large) }}</strong></span>
+                            <span class="me-3">Medium: <strong>{{ number_format($eggProduction->eggs_medium) }}</strong></span>
+                            <span>Small: <strong>{{ number_format($eggProduction->eggs_small) }}</strong></span>
+                        </p>
+                    </div>
+                    @endif
                     @if($eggProduction->notes)
                     <div class="col-12">
                         <label class="text-muted">Notes</label>

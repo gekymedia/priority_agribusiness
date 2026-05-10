@@ -39,6 +39,7 @@
                         <th><a href="{{ $sortUrl('eggs_collected') }}" class="text-decoration-none text-dark">Eggs Collected</a><i class="fas{{ $sortIcon('eggs_collected') }} ms-1"></i></th>
                         <th><a href="{{ $sortUrl('cracked_or_damaged') }}" class="text-decoration-none text-dark">Cracked/Damaged</a><i class="fas{{ $sortIcon('cracked_or_damaged') }} ms-1"></i></th>
                         <th><a href="{{ $sortUrl('eggs_used_internal') }}" class="text-decoration-none text-dark">Used Internal</a><i class="fas{{ $sortIcon('eggs_used_internal') }} ms-1"></i></th>
+                        <th>L / M / S</th>
                         <th>Available</th>
                         <th>Actions</th>
                     </tr>
@@ -52,9 +53,16 @@
                         <td><strong>{{ number_format($production->eggs_collected) }}</strong></td>
                         <td>{{ number_format($production->cracked_or_damaged) }}</td>
                         <td>{{ number_format($production->eggs_used_internal) }}</td>
+                        <td class="text-nowrap small text-muted">
+                            @if($production->egg_size_breakdown)
+                                {{ number_format($production->eggs_large) }} / {{ number_format($production->eggs_medium) }} / {{ number_format($production->eggs_small) }}
+                            @else
+                                —
+                            @endif
+                        </td>
                         <td>
                             <span class="badge bg-success">
-                                {{ number_format($production->eggs_collected - $production->cracked_or_damaged - $production->eggs_used_internal) }}
+                                {{ number_format($production->remainingEggs()) }}
                             </span>
                         </td>
                         <td>
@@ -75,7 +83,7 @@
                     </tr>
                     @empty
                     <tr id="egg-productions-empty">
-                        <td colspan="8" class="text-center py-5">
+                        <td colspan="9" class="text-center py-5">
                             <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                             <p class="text-muted">No egg production records found</p>
                             <a href="{{ route('egg-productions.create') }}" class="btn btn-primary">
@@ -123,6 +131,9 @@
         var batchCode = (p.bird_batch && p.bird_batch.batch_code) ? p.bird_batch.batch_code : 'N/A';
         var farmName = (p.bird_batch && p.bird_batch.farm && p.bird_batch.farm.name) ? p.bird_batch.farm.name : 'N/A';
         var available = (p.eggs_collected || 0) - (p.cracked_or_damaged || 0) - (p.eggs_used_internal || 0);
+        var lms = (p.egg_size_breakdown) ?
+            (formatNum(p.eggs_large || 0) + ' / ' + formatNum(p.eggs_medium || 0) + ' / ' + formatNum(p.eggs_small || 0)) :
+            '—';
         var showUrl = baseUrl + '/' + p.id;
         var editUrl = baseUrl + '/' + p.id + '/edit';
         var delUrl = destroyUrl + p.id;
@@ -133,6 +144,7 @@
             '<td><strong>' + formatNum(p.eggs_collected) + '</strong></td>' +
             '<td>' + formatNum(p.cracked_or_damaged) + '</td>' +
             '<td>' + formatNum(p.eggs_used_internal) + '</td>' +
+            '<td class="text-nowrap small text-muted">' + lms + '</td>' +
             '<td><span class="badge bg-success">' + formatNum(available) + '</span></td>' +
             '<td>' +
                 '<a href="' + showUrl + '" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a> ' +
