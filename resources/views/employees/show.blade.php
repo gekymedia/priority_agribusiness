@@ -52,6 +52,10 @@
                     <div class="col-md-8">{{ $employee->phone ?? 'N/A' }}</div>
                 </div>
                 <div class="row mb-3">
+                    <div class="col-md-4"><strong>Alternate Phone:</strong></div>
+                    <div class="col-md-8">{{ $employee->phone_alt ?? 'N/A' }}</div>
+                </div>
+                <div class="row mb-3">
                     <div class="col-md-4"><strong>Hire Date:</strong></div>
                     <div class="col-md-8">{{ $employee->hire_date ? $employee->hire_date->format('F d, Y') : 'N/A' }}</div>
                 </div>

@@ -92,7 +92,16 @@
                         </td>
                         <td>{{ $record->display_name }}</td>
                         <td>{{ $record->email }}</td>
-                        <td>{{ $record->phone ?? 'N/A' }}</td>
+                        <td>
+                            @if($record->phone || ($record->phone_alt ?? null))
+                                {{ $record->phone ?? '—' }}
+                                @if($record->phone_alt ?? null)
+                                    <br><small class="text-muted">Alt: {{ $record->phone_alt }}</small>
+                                @endif
+                            @else
+                                N/A
+                            @endif
+                        </td>
                         <td>
                             @php
                                 $roleBadgeColors = [

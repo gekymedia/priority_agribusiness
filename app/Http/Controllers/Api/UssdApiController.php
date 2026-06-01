@@ -7,25 +7,26 @@ use App\Models\BirdBatch;
 use App\Models\BirdBatchRecord;
 use App\Models\EggProduction;
 use App\Models\EggSale;
-use App\Models\Employee;
 use App\Models\PaymentSetting;
 use App\Services\PriorityBankIntegrationService;
-use App\Support\PhoneNormalizer;
+use App\Services\UssdStaffResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class UssdApiController extends Controller
 {
+    public function __construct(private UssdStaffResolver $staffResolver) {}
+
     /**
      * Check if a phone number belongs to an approved agribusiness staff member.
      */
     public function staffCheck(Request $request): JsonResponse
     {
         $phone = (string) $request->query('phone', '');
-        $employee = $this->findStaffByPhone($phone);
+        $staff = $this->staffResolver->resolve($phone);
 
-        if (! $employee) {
+        if (! $staff) {
             return response()->json([
                 'success' => true,
                 'data' => ['is_staff' => false],
@@ -36,10 +37,12 @@ class UssdApiController extends Controller
             'success' => true,
             'data' => [
                 'is_staff' => true,
-                'employee_id' => $employee->employee_id,
-                'name' => $employee->full_name,
-                'access_level' => $employee->access_level,
-                'farm_id' => $employee->farm_id,
+                'record_type' => $staff['type'],
+                'staff_id' => $staff['staff_id'],
+                'employee_id' => $staff['type'] === 'employee' ? $staff['staff_id'] : null,
+                'name' => $staff['name'],
+                'access_level' => $staff['access_level'],
+                'farm_id' => $staff['farm_id'],
             ],
         ]);
     }
@@ -50,8 +53,8 @@ class UssdApiController extends Controller
     public function batches(Request $request): JsonResponse
     {
         $phone = (string) $request->query('phone', '');
-        $employee = $this->findStaffByPhone($phone);
-        if (! $employee) {
+        $staff = $this->staffResolver->resolve($phone);
+        if (! $staff) {
             return response()->json(['success' => false, 'message' => 'Unauthorized staff phone.'], 403);
         }
 
@@ -97,8 +100,8 @@ class UssdApiController extends Controller
     public function recordEggSale(Request $request): JsonResponse
     {
         $phone = (string) $request->input('phone', '');
-        $employee = $this->findStaffByPhone($phone);
-        if (! $employee) {
+        $staff = $this->staffResolver->resolve($phone);
+        if (! $staff) {
             return response()->json(['success' => false, 'message' => 'Unauthorized staff phone.'], 403);
         }
 
@@ -130,7 +133,7 @@ class UssdApiController extends Controller
             default => PaymentSetting::getEggMarketPricePerCrate(),
         };
 
-        $notes = trim(($data['notes'] ?? '') . ' Recorded via USSD by ' . $employee->full_name . ' (' . $phone . ').');
+        $notes = trim(($data['notes'] ?? '') . ' Recorded via USSD by ' . $staff['name'] . ' (' . $phone . ').');
 
         $eggSale = EggSale::create([
             'bird_batch_id' => $batchId,
@@ -174,8 +177,8 @@ class UssdApiController extends Controller
     public function recordMortality(Request $request): JsonResponse
     {
         $phone = (string) $request->input('phone', '');
-        $employee = $this->findStaffByPhone($phone);
-        if (! $employee) {
+        $staff = $this->staffResolver->resolve($phone);
+        if (! $staff) {
             return response()->json(['success' => false, 'message' => 'Unauthorized staff phone.'], 403);
         }
 
@@ -201,7 +204,7 @@ class UssdApiController extends Controller
         }
 
         $recordDate = $data['record_date'] ?? now()->toDateString();
-        $notes = trim(($data['notes'] ?? '') . ' Recorded via USSD by ' . $employee->full_name . ' (' . $phone . ').');
+        $notes = trim(($data['notes'] ?? '') . ' Recorded via USSD by ' . $staff['name'] . ' (' . $phone . ').');
 
         $record = BirdBatchRecord::query()
             ->where('bird_batch_id', $batchId)
@@ -249,8 +252,8 @@ class UssdApiController extends Controller
     public function recordEggProduction(Request $request): JsonResponse
     {
         $phone = (string) $request->input('phone', '');
-        $employee = $this->findStaffByPhone($phone);
-        if (! $employee) {
+        $staff = $this->staffResolver->resolve($phone);
+        if (! $staff) {
             return response()->json(['success' => false, 'message' => 'Unauthorized staff phone.'], 403);
         }
 
@@ -290,7 +293,7 @@ class UssdApiController extends Controller
         }
 
         $recordDate = $data['date'] ?? now()->toDateString();
-        $notes = trim(($data['notes'] ?? '') . ' Recorded via USSD by ' . $employee->full_name . ' (' . $phone . ').');
+        $notes = trim(($data['notes'] ?? '') . ' Recorded via USSD by ' . $staff['name'] . ' (' . $phone . ').');
 
         $record = EggProduction::query()
             ->where('bird_batch_id', $batchId)
@@ -334,24 +337,5 @@ class UssdApiController extends Controller
             ],
             'message' => $created ? 'Egg production recorded successfully.' : 'Today\'s egg production updated.',
         ], $created ? 201 : 200);
-    }
-
-    protected function findStaffByPhone(string $phone): ?Employee
-    {
-        $variants = PhoneNormalizer::variants($phone);
-        if ($variants === []) {
-            return null;
-        }
-
-        return Employee::query()
-            ->where('is_active', true)
-            ->where('status', 'approved')
-            ->whereNotIn('access_level', ['viewer'])
-            ->where(function ($query) use ($variants) {
-                foreach ($variants as $variant) {
-                    $query->orWhere('phone', $variant);
-                }
-            })
-            ->first();
     }
 }

@@ -48,4 +48,28 @@ class PhoneNormalizer
 
         return array_values(array_unique($variants));
     }
+
+    /**
+     * Check if an incoming phone matches any stored phone value(s).
+     */
+    public static function matchesAny(string $incoming, ?string ...$storedPhones): bool
+    {
+        $incomingVariants = self::variants($incoming);
+        if ($incomingVariants === []) {
+            return false;
+        }
+
+        foreach ($storedPhones as $stored) {
+            if ($stored === null || trim($stored) === '') {
+                continue;
+            }
+
+            $storedVariants = self::variants($stored);
+            if ($storedVariants !== [] && array_intersect($incomingVariants, $storedVariants) !== []) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

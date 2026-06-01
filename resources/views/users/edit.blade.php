@@ -40,12 +40,23 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Phone</label>
-                            <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="form-control @error('phone') is-invalid @enderror">
+                            <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="form-control @error('phone') is-invalid @enderror" placeholder="e.g. 0241234567">
                             @error('phone')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Alternate Phone</label>
+                            <input type="text" name="phone_alt" value="{{ old('phone_alt', $user->phone_alt) }}" class="form-control @error('phone_alt') is-invalid @enderror" placeholder="Second SIM for USSD access">
+                            <small class="text-muted">Optional. Owner/managers can dial USSD from either number.</small>
+                            @error('phone_alt')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Role <span class="text-danger">*</span></label>
                             <select name="role" class="form-control @error('role') is-invalid @enderror" required>

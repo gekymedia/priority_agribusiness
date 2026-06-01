@@ -66,8 +66,17 @@
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Phone</label>
-                    <input type="text" name="phone" value="{{ old('phone', $employee->phone) }}" class="form-control">
+                    <input type="text" name="phone" value="{{ old('phone', $employee->phone) }}" class="form-control" placeholder="e.g. 0241234567">
                     @error('phone')
+                        <div class="text-danger small">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Alternate Phone</label>
+                    <input type="text" name="phone_alt" value="{{ old('phone_alt', $employee->phone_alt) }}" class="form-control" placeholder="Second SIM for USSD access">
+                    <small class="text-muted">Optional. Staff can dial USSD from either number.</small>
+                    @error('phone_alt')
                         <div class="text-danger small">{{ $message }}</div>
                     @enderror
                 </div>

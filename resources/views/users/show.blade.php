@@ -29,7 +29,12 @@
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-4 text-muted">Phone</div>
-                    <div class="col-md-8">{{ $user->phone ?? 'N/A' }}</div>
+                    <div class="col-md-8">
+                        {{ $user->phone ?? 'N/A' }}
+                        @if($user->phone_alt)
+                            <br><small class="text-muted">Alt: {{ $user->phone_alt }}</small>
+                        @endif
+                    </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-4 text-muted">Role</div>
