@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\FarmApiController;
 use App\Http\Controllers\Api\FinancialApiController;
 use App\Http\Controllers\Api\UserApiController;
+use App\Http\Controllers\Api\UssdApiController;
 use App\Http\Controllers\PriorityBankWebhookController;
 
 /*
@@ -46,8 +47,16 @@ Route::prefix('v1')->middleware(['auth:sanctum'])->group(function () {
 
 // Public API routes (if needed for bank integration)
 Route::prefix('public/v1')->group(function () {
-    // Add public endpoints here if needed
     Route::post('/auth/token', [UserApiController::class, 'generateToken']);
+
+    // USSD integration (CUG admission USSD → Priority Agribusiness)
+    Route::prefix('ussd')->middleware('ussd.api')->group(function () {
+        Route::get('/staff-check', [UssdApiController::class, 'staffCheck']);
+        Route::get('/batches', [UssdApiController::class, 'batches']);
+        Route::post('/egg-sales', [UssdApiController::class, 'recordEggSale']);
+        Route::post('/egg-production', [UssdApiController::class, 'recordEggProduction']);
+        Route::post('/mortality', [UssdApiController::class, 'recordMortality']);
+    });
 });
 
 // -------------------------------------------------------------------------

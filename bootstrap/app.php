@@ -34,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'employee.access' => \App\Http\Middleware\CheckEmployeeAccess::class,
             'auth.users' => \App\Http\Middleware\AuthenticateUsers::class,
+            'ussd.api' => \App\Http\Middleware\VerifyUssdApiKey::class,
         ]);
     })
     // You may register additional console commands by scanning directories

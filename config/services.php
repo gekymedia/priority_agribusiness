@@ -51,6 +51,10 @@ return [
         'merchant_account_number' => env('HUBTEL_MERCHANT_ACCOUNT_NUMBER'),
     ],
 
+    'ussd' => [
+        'api_key' => env('USSD_API_KEY'),
+    ],
+
     'openai' => [
         'api_key' => env('OPENAI_API_KEY'),
         'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
