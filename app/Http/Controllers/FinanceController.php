@@ -10,6 +10,7 @@ use App\Models\CropSale;
 use App\Models\CropInputExpense;
 use App\Models\PoultryExpense;
 use App\Services\PriorityBankSyncService;
+use App\Services\PriorityBankReconciliationService;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -207,6 +208,37 @@ class FinanceController extends Controller
 
         return redirect()->route('finance.index', $request->only(['from', 'to']))
             ->with(($results['synced'] ?? 0) > 0 ? 'success' : 'info', $message);
+    }
+
+    public function reconcile(Request $request, PriorityBankReconciliationService $reconciliationService)
+    {
+        if (! $reconciliationService->isConfigured()) {
+            return redirect()->route('finance.index', $request->only(['from', 'to']))
+                ->with('error', 'Priority Bank is not configured. Set API URL and token in Settings → Priority Bank.');
+        }
+
+        $results = $reconciliationService->reconcile($request->input('from'), $request->input('to'));
+
+        if (! empty($results['errors'])) {
+            return redirect()->route('finance.index', $request->only(['from', 'to']))
+                ->with('error', $results['errors'][0]);
+        }
+
+        if (($results['backfilled'] ?? 0) === 0 && ($results['still_pending'] ?? 0) === 0) {
+            return redirect()->route('finance.index', $request->only(['from', 'to']))
+                ->with('info', 'No pending records needed reconciliation in this range.');
+        }
+
+        $message = ($results['backfilled'] ?? 0) . ' record(s) matched to Priority Bank and marked synced.';
+        if (! ($results['bank_api_available'] ?? false)) {
+            $message .= ' (Used expected external IDs for auto-pushed records — bank transaction API not available.)';
+        }
+        if (($results['still_pending'] ?? 0) > 0) {
+            $message .= ' ' . $results['still_pending'] . ' still pending (no bank match or manual income).';
+        }
+
+        return redirect()->route('finance.index', $request->only(['from', 'to']))
+            ->with('success', $message);
     }
 
     public function incomeIndex(Request $request)

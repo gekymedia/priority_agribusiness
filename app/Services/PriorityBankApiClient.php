@@ -144,6 +144,50 @@ class PriorityBankApiClient
     }
 
     /**
+     * List transactions for a system account (when supported by Priority Bank).
+     *
+     * @return array<int, array<string, mixed>>|null Null when the endpoint is unavailable.
+     */
+    public function getTransactions(string $systemId, ?string $from = null, ?string $to = null): ?array
+    {
+        $url = rtrim($this->baseUrl, '/') . '/api/central-finance/transactions';
+
+        try {
+            $headers = ['Accept' => 'application/json'];
+            if ($this->apiToken) {
+                $headers['Authorization'] = 'Bearer ' . $this->apiToken;
+            }
+
+            $query = array_filter([
+                'system_id' => $systemId,
+                'from' => $from,
+                'to' => $to,
+            ]);
+
+            $response = Http::timeout($this->timeout)
+                ->withHeaders($headers)
+                ->get($url, $query);
+
+            if (! $response->successful()) {
+                Log::info('Priority Bank getTransactions unavailable', [
+                    'status' => $response->status(),
+                ]);
+
+                return null;
+            }
+
+            $data = $response->json();
+            $transactions = $data['transactions'] ?? $data['data'] ?? $data;
+
+            return is_array($transactions) ? array_values($transactions) : null;
+        } catch (\Exception $e) {
+            Log::info('Priority Bank getTransactions failed', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    /**
      * Fetch account balance from Priority Bank (central-finance/balance).
      */
     public function getBalance(): ?array

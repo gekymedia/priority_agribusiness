@@ -106,6 +106,7 @@ Route::middleware('auth.users')->group(function () {
     Route::prefix('finance')->name('finance.')->group(function () {
         Route::get('/', [FinanceController::class, 'index'])->name('index');
         Route::post('/sync-all', [FinanceController::class, 'bulkSync'])->name('sync-all');
+        Route::post('/reconcile', [FinanceController::class, 'reconcile'])->name('reconcile');
         Route::prefix('income')->name('income.')->group(function () {
             Route::get('/', [FinanceController::class, 'incomeIndex'])->name('index');
             Route::get('/create', [FinanceController::class, 'incomeCreate'])->name('create');

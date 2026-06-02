@@ -55,6 +55,15 @@
                     @endif
                 </button>
             </form>
+            <form action="{{ route('finance.reconcile') }}" method="POST" class="d-inline" data-sync-form
+                  onsubmit="return confirm('Match pending records to Priority Bank and restore external IDs? This fixes records that were synced before IDs were stored locally. It will not create duplicate bank entries.');">
+                @csrf
+                @if(request('from'))<input type="hidden" name="from" value="{{ request('from') }}">@endif
+                @if(request('to'))<input type="hidden" name="to" value="{{ request('to') }}">@endif
+                <button type="submit" class="btn btn-outline-success" {{ ($pendingSync['total'] ?? 0) === 0 ? 'disabled' : '' }} title="Fix records already in the bank but missing External ID">
+                    <i class="fas fa-link me-2"></i>Reconcile with Bank
+                </button>
+            </form>
         @endif
     </div>
     <form method="GET" class="d-flex gap-2 flex-wrap">
