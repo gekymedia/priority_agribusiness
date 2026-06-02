@@ -92,6 +92,11 @@ class BirdBatch extends Model
         return $this->hasMany(EggSale::class);
     }
 
+    public function eggClientSales(): HasMany
+    {
+        return $this->hasMany(EggClientSale::class);
+    }
+
     /**
      * Expenses associated with this batch.
      */

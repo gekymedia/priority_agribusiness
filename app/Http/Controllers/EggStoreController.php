@@ -346,6 +346,7 @@ class EggStoreController extends Controller
                 'quantity_sold' => $item->quantity,
                 'unit_type' => $item->unit_type,
                 'price_per_unit' => $item->unit_price,
+                'payment_status' => EggSale::PAYMENT_PAID,
                 'buyer_name' => $order->customer_name,
                 'buyer_contact' => $order->customer_phone,
                 'notes' => 'Online order ' . $order->order_number,

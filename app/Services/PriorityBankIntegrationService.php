@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\EggClientSale;
 use App\Models\EggSale;
 use App\Models\BirdSale;
 use App\Models\CropSale;
@@ -73,6 +74,61 @@ class PriorityBankIntegrationService
                 'egg_sale_id' => $eggSale->id,
                 'error' => $e->getMessage(),
             ]);
+            return false;
+        }
+    }
+
+    /**
+     * Push client egg sale income to Priority Bank (paid amount only).
+     */
+    public function pushEggClientSale(EggClientSale $clientSale): bool
+    {
+        if (! SystemSetting::get('priority_bank_api_token') && ! config('services.priority_bank.api_token')) {
+            return false;
+        }
+
+        $clientSale->loadMissing('items');
+        $amountPaid = (float) $clientSale->amount_paid;
+
+        if ($amountPaid <= 0) {
+            return false;
+        }
+
+        try {
+            $sizeSummary = $clientSale->items
+                ->groupBy('egg_size')
+                ->map(fn ($group, $size) => $group->sum('quantity_sold') . ' ' . $size)
+                ->implode(', ');
+
+            $result = $this->client->pushIncome(
+                systemId: $this->systemId,
+                externalTransactionId: 'agri_egg_client_sale_' . $clientSale->id,
+                amount: $amountPaid,
+                date: $clientSale->date->format('Y-m-d'),
+                channel: 'cash',
+                options: [
+                    'notes' => 'Egg client sale' .
+                               ($sizeSummary ? ": {$sizeSummary}" : '') .
+                               ($clientSale->buyer_name ? " - Buyer: {$clientSale->buyer_name}" : '') .
+                               ($clientSale->notes ? " - {$clientSale->notes}" : ''),
+                    'income_category_name' => 'Egg Sales',
+                    'metadata' => [
+                        'operation' => 'poultry_farm',
+                        'buyer_name' => $clientSale->buyer_name,
+                        'total_amount' => $clientSale->total_amount,
+                        'amount_paid' => $amountPaid,
+                        'balance' => $clientSale->balance,
+                    ],
+                ]
+            );
+
+            return $result && $result['success'];
+        } catch (\Exception $e) {
+            Log::error('Exception pushing egg client sale to Priority Bank', [
+                'egg_client_sale_id' => $clientSale->id,
+                'error' => $e->getMessage(),
+            ]);
+
             return false;
         }
     }

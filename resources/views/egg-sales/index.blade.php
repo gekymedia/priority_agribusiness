@@ -4,8 +4,8 @@
 
 @section('content')
 <div class="page-header">
-    <h1 class="page-title">Egg Sales</h1>
-    <p class="page-subtitle">Track all egg sales transactions</p>
+    <h1 class="page-title">Egg Sales @include('egg-sales._stock_balance')</h1>
+    <p class="page-subtitle">Track client egg sales with sizes and payment status</p>
 </div>
 
 @php
@@ -33,12 +33,15 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <a href="{{ route('egg-sales.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Record Sale
+            <i class="fas fa-plus me-2"></i>Record Client Sale
+        </a>
+        <a href="{{ route('egg-sales.bulk-import') }}" class="btn btn-outline-primary ms-2">
+            <i class="fas fa-file-import me-2"></i>Bulk Import
         </a>
     </div>
 </div>
 
-<div class="agri-card">
+<div class="agri-card mb-4">
     <div class="agri-card-body">
         <div class="table-responsive">
             <table class="table table-hover">
@@ -49,27 +52,42 @@
                             $sortIcon = fn ($col) => $sort === $col ? ($direction === 'asc' ? ' fa-sort-up' : ' fa-sort-down') : ' fa-sort text-muted';
                         @endphp
                         <th><a href="{{ $sortUrl('date') }}" class="text-decoration-none text-dark">Date</a><i class="fas{{ $sortIcon('date') }} ms-1"></i></th>
+                        <th><a href="{{ $sortUrl('buyer_name') }}" class="text-decoration-none text-dark">Client</a><i class="fas{{ $sortIcon('buyer_name') }} ms-1"></i></th>
                         <th><a href="{{ $sortUrl('batch') }}" class="text-decoration-none text-dark">Batch</a><i class="fas{{ $sortIcon('batch') }} ms-1"></i></th>
-                        <th><a href="{{ $sortUrl('farm') }}" class="text-decoration-none text-dark">Farm</a><i class="fas{{ $sortIcon('farm') }} ms-1"></i></th>
-                        <th><a href="{{ $sortUrl('quantity_sold') }}" class="text-decoration-none text-dark">Quantity</a><i class="fas{{ $sortIcon('quantity_sold') }} ms-1"></i></th>
-                        <th>Unit</th>
-                        <th><a href="{{ $sortUrl('price_per_unit') }}" class="text-decoration-none text-dark">Price/Unit</a><i class="fas{{ $sortIcon('price_per_unit') }} ms-1"></i></th>
-                        <th>Total Amount</th>
-                        <th><a href="{{ $sortUrl('buyer_name') }}" class="text-decoration-none text-dark">Buyer</a><i class="fas{{ $sortIcon('buyer_name') }} ms-1"></i></th>
+                        <th>Line items</th>
+                        <th>Total</th>
+                        <th><a href="{{ $sortUrl('amount_paid') }}" class="text-decoration-none text-dark">Received</a><i class="fas{{ $sortIcon('amount_paid') }} ms-1"></i></th>
+                        <th>Balance</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($sales as $sale)
+                    @forelse($clientSales as $sale)
                     <tr>
                         <td>{{ $sale->date->format('M d, Y') }}</td>
+                        <td><strong>{{ $sale->buyer_name ?: '—' }}</strong></td>
                         <td>{{ $sale->birdBatch->batch_code ?? 'N/A' }}</td>
-                        <td>{{ $sale->birdBatch->farm->name ?? 'N/A' }}</td>
-                        <td><strong>{{ number_format($sale->quantity_sold) }}</strong></td>
-                        <td><span class="badge bg-info">{{ ucfirst($sale->unit_type) }}</span></td>
-                        <td>₵{{ number_format($sale->price_per_unit, 2) }}</td>
-                        <td><strong class="text-success">₵{{ number_format($sale->quantity_sold * $sale->price_per_unit, 2) }}</strong></td>
-                        <td>{{ $sale->buyer_name ?? 'N/A' }}</td>
+                        <td>
+                            @foreach($sale->items as $item)
+                                <span class="badge bg-light text-dark border me-1 mb-1">
+                                    {{ $item->quantity_sold }} {{ strtolower($item->egg_size_label) }} @ ₵{{ number_format($item->price_per_unit, 0) }}
+                                    @if($item->payment_status === 'unpaid') <span class="text-danger">(unpaid)</span> @endif
+                                </span>
+                            @endforeach
+                        </td>
+                        <td><strong>₵{{ number_format($sale->total_amount, 2) }}</strong></td>
+                        <td class="text-success">₵{{ number_format($sale->amount_paid, 2) }}</td>
+                        <td class="text-danger">₵{{ number_format($sale->balance, 2) }}</td>
+                        <td>
+                            @if($sale->payment_status === 'paid')
+                                <span class="badge bg-success">Paid</span>
+                            @elseif($sale->payment_status === 'partial')
+                                <span class="badge bg-warning text-dark">Partial</span>
+                            @else
+                                <span class="badge bg-danger">Unpaid</span>
+                            @endif
+                        </td>
                         <td>
                             <a href="{{ route('egg-sales.show', $sale) }}" class="btn btn-sm btn-info">
                                 <i class="fas fa-eye"></i>
@@ -77,7 +95,7 @@
                             <a href="{{ route('egg-sales.edit', $sale) }}" class="btn btn-sm btn-warning">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form action="{{ route('egg-sales.destroy', $sale) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this sale?');">
+                            <form action="{{ route('egg-sales.destroy', $sale) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this client sale?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger">
@@ -90,7 +108,7 @@
                     <tr>
                         <td colspan="9" class="text-center py-5">
                             <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">No egg sales recorded</p>
+                            <p class="text-muted">No client egg sales recorded yet</p>
                             <a href="{{ route('egg-sales.create') }}" class="btn btn-primary">
                                 <i class="fas fa-plus me-2"></i>Record First Sale
                             </a>
@@ -101,13 +119,60 @@
             </table>
         </div>
 
-        @if($sales->hasPages())
+        @if($clientSales->hasPages())
         <div class="mt-4">
-            {{ $sales->withQueryString()->links() }}
+            {{ $clientSales->withQueryString()->links() }}
         </div>
         @endif
     </div>
 </div>
+
+@if($legacySales->count() > 0)
+<div class="agri-card">
+    <div class="agri-card-header">
+        <h3 class="h6 mb-0"><i class="fas fa-history me-2"></i>Other recorded sales (online store / legacy)</h3>
+    </div>
+    <div class="agri-card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Buyer</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Total</th>
+                        <th>Source</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($legacySales as $sale)
+                    <tr>
+                        <td>{{ $sale->date->format('M d, Y') }}</td>
+                        <td>{{ $sale->buyer_name ?? 'N/A' }}</td>
+                        <td>{{ number_format($sale->quantity_sold) }}</td>
+                        <td>{{ ucfirst($sale->unit_type) }}</td>
+                        <td>₵{{ number_format($sale->line_total, 2) }}</td>
+                        <td>
+                            @if($sale->market_order_id)
+                                <span class="badge bg-info">Online order</span>
+                            @else
+                                <span class="badge bg-secondary">Legacy</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @if($legacySales->hasPages())
+        <div class="mt-3">
+            {{ $legacySales->withQueryString()->links() }}
+        </div>
+        @endif
+    </div>
+</div>
+@endif
 @endif
 
 @if($activeTab === 'online')

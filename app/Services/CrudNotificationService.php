@@ -127,11 +127,22 @@ class CrudNotificationService
 
     protected function eggSaleSummary(Model $record): string
     {
+        if ($record instanceof \App\Models\EggClientSale) {
+            $buyer = $record->buyer_name ?? 'N/A';
+            $total = number_format($record->total_amount, 2);
+            $paid = number_format((float) $record->amount_paid, 2);
+            $lines = $record->relationLoaded('items')
+                ? $record->items->count()
+                : $record->items()->count();
+
+            return "Buyer: {$buyer}\nLines: {$lines}\nTotal: GHS {$total}\nReceived: GHS {$paid}\nStatus: {$record->payment_status_label}";
+        }
+
         $qty = $record->quantity_sold ?? 0;
         $unit = $record->unit_type ?? 'units';
         $amount = number_format(($record->quantity_sold ?? 0) * ($record->price_per_unit ?? 0), 2);
         $buyer = $record->buyer_name ?? 'N/A';
-        
+
         return "Quantity: {$qty} {$unit}\nAmount: GHS {$amount}\nBuyer: {$buyer}";
     }
 

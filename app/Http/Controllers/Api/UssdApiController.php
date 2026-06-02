@@ -141,6 +141,7 @@ class UssdApiController extends Controller
             'quantity_sold' => $data['quantity_sold'],
             'unit_type' => $unitType,
             'price_per_unit' => $pricePerUnit,
+            'payment_status' => EggSale::PAYMENT_PAID,
             'buyer_name' => $data['buyer_name'] ?? null,
             'buyer_contact' => $phone,
             'notes' => $notes,
