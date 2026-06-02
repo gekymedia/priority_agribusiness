@@ -119,7 +119,7 @@ class PriorityBankSyncService
     protected function pendingIncomesQuery(?string $from, ?string $to)
     {
         return Income::query()
-            ->whereNull('priority_bank_synced_at')
+            ->where(fn ($q) => $q->whereNull('external_transaction_id')->orWhere('external_transaction_id', ''))
             ->when($from, fn ($q) => $q->whereDate('received_on', '>=', $from))
             ->when($to, fn ($q) => $q->whereDate('received_on', '<=', $to));
     }
@@ -127,7 +127,7 @@ class PriorityBankSyncService
     protected function pendingPoultryExpensesQuery(?string $from, ?string $to)
     {
         return PoultryExpense::query()
-            ->whereNull('priority_bank_synced_at')
+            ->where(fn ($q) => $q->whereNull('external_transaction_id')->orWhere('external_transaction_id', ''))
             ->when($from, fn ($q) => $q->whereDate('date', '>=', $from))
             ->when($to, fn ($q) => $q->whereDate('date', '<=', $to));
     }
@@ -135,7 +135,7 @@ class PriorityBankSyncService
     protected function pendingCropInputExpensesQuery(?string $from, ?string $to)
     {
         return CropInputExpense::query()
-            ->whereNull('priority_bank_synced_at')
+            ->where(fn ($q) => $q->whereNull('external_transaction_id')->orWhere('external_transaction_id', ''))
             ->when($from, fn ($q) => $q->whereDate('date', '>=', $from))
             ->when($to, fn ($q) => $q->whereDate('date', '<=', $to));
     }
@@ -143,7 +143,7 @@ class PriorityBankSyncService
     protected function pendingEggClientSalesQuery(?string $from, ?string $to)
     {
         return EggClientSale::query()
-            ->whereNull('priority_bank_synced_at')
+            ->where(fn ($q) => $q->whereNull('external_transaction_id')->orWhere('external_transaction_id', ''))
             ->where('amount_paid', '>', 0)
             ->when($from, fn ($q) => $q->whereDate('date', '>=', $from))
             ->when($to, fn ($q) => $q->whereDate('date', '<=', $to));
@@ -153,7 +153,7 @@ class PriorityBankSyncService
     {
         return EggSale::query()
             ->whereNull('egg_client_sale_id')
-            ->whereNull('priority_bank_synced_at')
+            ->where(fn ($q) => $q->whereNull('external_transaction_id')->orWhere('external_transaction_id', ''))
             ->when($from, fn ($q) => $q->whereDate('date', '>=', $from))
             ->when($to, fn ($q) => $q->whereDate('date', '<=', $to));
     }
@@ -161,7 +161,7 @@ class PriorityBankSyncService
     protected function pendingBirdSalesQuery(?string $from, ?string $to)
     {
         return BirdSale::query()
-            ->whereNull('priority_bank_synced_at')
+            ->where(fn ($q) => $q->whereNull('external_transaction_id')->orWhere('external_transaction_id', ''))
             ->when($from, fn ($q) => $q->whereDate('date', '>=', $from))
             ->when($to, fn ($q) => $q->whereDate('date', '<=', $to));
     }
@@ -169,7 +169,7 @@ class PriorityBankSyncService
     protected function pendingCropSalesQuery(?string $from, ?string $to)
     {
         return CropSale::query()
-            ->whereNull('priority_bank_synced_at')
+            ->where(fn ($q) => $q->whereNull('external_transaction_id')->orWhere('external_transaction_id', ''))
             ->when($from, fn ($q) => $q->whereDate('date', '>=', $from))
             ->when($to, fn ($q) => $q->whereDate('date', '<=', $to));
     }

@@ -32,7 +32,6 @@ class FinanceController extends Controller
                 amount: (float) $income->amount,
                 externalId: $income->external_transaction_id,
                 source: 'Manual',
-                syncedAt: $income->priority_bank_synced_at ?? null,
                 syncRoute: route('finance.income.sync', $income),
             ));
 
@@ -54,9 +53,8 @@ class FinanceController extends Controller
                     category: 'Egg Sales',
                     description: $description,
                     amount: (float) $sale->total_amount,
-                    externalId: 'agri_egg_client_sale_' . $sale->id,
+                    externalId: $sale->external_transaction_id,
                     source: 'Auto (Egg Sales)',
-                    syncedAt: $sale->priority_bank_synced_at ?? null,
                     syncRoute: null,
                     canSync: $received > 0,
                 );
@@ -73,9 +71,8 @@ class FinanceController extends Controller
                 category: 'Egg Sales',
                 description: trim("Egg sale: {$sale->quantity_sold} {$sale->unit_type}" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
                 amount: (float) ($sale->quantity_sold * $sale->price_per_unit),
-                externalId: 'agri_egg_sale_' . $sale->id,
+                externalId: $sale->external_transaction_id,
                 source: 'Auto (Egg Sales)',
-                syncedAt: $sale->priority_bank_synced_at ?? null,
                 syncRoute: null,
             ));
 
@@ -89,9 +86,8 @@ class FinanceController extends Controller
                 category: 'Bird Sales',
                 description: trim("Bird sale: {$sale->quantity_sold} birds" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
                 amount: (float) ($sale->quantity_sold * $sale->price_per_bird),
-                externalId: 'agri_bird_sale_' . $sale->id,
+                externalId: $sale->external_transaction_id,
                 source: 'Auto (Bird Sales)',
-                syncedAt: $sale->priority_bank_synced_at ?? null,
                 syncRoute: null,
             ));
 
@@ -105,9 +101,8 @@ class FinanceController extends Controller
                 category: 'Crop Sales',
                 description: trim("Crop sale: {$sale->quantity_sold} units" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
                 amount: (float) ($sale->quantity_sold * $sale->price_per_unit),
-                externalId: 'agri_crop_sale_' . $sale->id,
+                externalId: $sale->external_transaction_id,
                 source: 'Auto (Crop Sales)',
-                syncedAt: $sale->priority_bank_synced_at ?? null,
                 syncRoute: null,
             ));
 
@@ -125,9 +120,8 @@ class FinanceController extends Controller
                     category: $categoryName,
                     description: $expense->description ?? '—',
                     amount: (float) $expense->amount,
-                    externalId: $expense->external_transaction_id ?? ('agri_poultry_expense_' . $expense->id),
+                    externalId: $expense->external_transaction_id,
                     source: 'Poultry Expense',
-                    syncedAt: $expense->priority_bank_synced_at ?? null,
                     syncRoute: route('finance.expenditure.sync', $expense),
                 );
             });
@@ -142,9 +136,8 @@ class FinanceController extends Controller
                 category: $expense->category ?? 'Crop Input',
                 description: $expense->description ?? '—',
                 amount: (float) $expense->amount,
-                externalId: 'agri_crop_expense_' . $expense->id,
+                externalId: $expense->external_transaction_id,
                 source: 'Crop Expense',
-                syncedAt: $expense->priority_bank_synced_at ?? null,
                 syncRoute: null,
             ));
 
@@ -282,11 +275,10 @@ class FinanceController extends Controller
         float $amount,
         ?string $externalId,
         string $source,
-        $syncedAt,
         ?string $syncRoute = null,
         bool $canSync = true,
     ): object {
-        $bankSynced = $syncedAt !== null;
+        $bankSynced = filled($externalId);
 
         return (object) [
             'date' => $date,
@@ -298,12 +290,7 @@ class FinanceController extends Controller
             'source' => $source,
             'bank_synced' => $bankSynced,
             'sync_route' => $syncRoute,
-            'can_sync' => $canSync && ! $bankSynced && ($syncRoute !== null || in_array($source, [
-                'Auto (Egg Sales)',
-                'Auto (Bird Sales)',
-                'Auto (Crop Sales)',
-                'Crop Expense',
-            ], true)),
+            'can_sync' => $canSync && ! $bankSynced && $syncRoute !== null,
         ];
     }
 }

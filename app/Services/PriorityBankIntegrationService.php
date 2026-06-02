@@ -49,10 +49,11 @@ class PriorityBankIntegrationService
 
         try {
             $totalAmount = $eggSale->quantity_sold * $eggSale->price_per_unit;
+            $extId = 'agri_egg_sale_' . $eggSale->id;
 
             $result = $this->client->pushIncome(
                 systemId: $this->systemId,
-                externalTransactionId: 'agri_egg_sale_' . $eggSale->id,
+                externalTransactionId: $extId,
                 amount: (float) $totalAmount,
                 date: $eggSale->date->format('Y-m-d'),
                 channel: 'cash',
@@ -71,7 +72,7 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            if ($this->succeeded($result, $eggSale)) {
+            if ($this->succeeded($result, $eggSale, $extId)) {
                 return true;
             }
 
@@ -97,12 +98,13 @@ class PriorityBankIntegrationService
         try {
             if (empty($income->external_transaction_id)) {
                 $income->external_transaction_id = str_pad((string) random_int(0, 9999999999), 10, '0', STR_PAD_LEFT);
-                $income->save();
             }
+
+            $extId = $income->external_transaction_id;
 
             $result = $this->client->pushIncome(
                 systemId: $this->systemId,
-                externalTransactionId: $income->external_transaction_id,
+                externalTransactionId: $extId,
                 amount: (float) $income->amount,
                 date: $income->received_on?->format('Y-m-d') ?? now()->format('Y-m-d'),
                 channel: 'bank',
@@ -112,7 +114,7 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            if ($this->succeeded($result, $income)) {
+            if ($this->succeeded($result, $income, $extId)) {
                 return true;
             }
 
@@ -127,13 +129,21 @@ class PriorityBankIntegrationService
         }
     }
 
-    protected function markSynced(Model $model): void
+    protected function markSynced(Model $model, string $externalTransactionId): void
     {
-        if (! Schema::hasColumn($model->getTable(), 'priority_bank_synced_at')) {
-            return;
+        $updates = [];
+
+        if (Schema::hasColumn($model->getTable(), 'external_transaction_id')) {
+            $updates['external_transaction_id'] = $externalTransactionId;
         }
 
-        $model->forceFill(['priority_bank_synced_at' => now()])->save();
+        if (Schema::hasColumn($model->getTable(), 'priority_bank_synced_at')) {
+            $updates['priority_bank_synced_at'] = now();
+        }
+
+        if ($updates !== []) {
+            $model->forceFill($updates)->save();
+        }
     }
 
     /**
@@ -158,9 +168,11 @@ class PriorityBankIntegrationService
                 ->map(fn ($group, $size) => $group->sum('quantity_sold') . ' ' . $size)
                 ->implode(', ');
 
+            $extId = 'agri_egg_client_sale_' . $clientSale->id;
+
             $result = $this->client->pushIncome(
                 systemId: $this->systemId,
-                externalTransactionId: 'agri_egg_client_sale_' . $clientSale->id,
+                externalTransactionId: $extId,
                 amount: $amountPaid,
                 date: $clientSale->date->format('Y-m-d'),
                 channel: 'cash',
@@ -180,7 +192,7 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            if ($this->succeeded($result, $clientSale)) {
+            if ($this->succeeded($result, $clientSale, $extId)) {
                 return true;
             }
 
@@ -206,10 +218,11 @@ class PriorityBankIntegrationService
 
         try {
             $totalAmount = $birdSale->quantity_sold * $birdSale->price_per_bird;
+            $extId = 'agri_bird_sale_' . $birdSale->id;
 
             $result = $this->client->pushIncome(
                 systemId: $this->systemId,
-                externalTransactionId: 'agri_bird_sale_' . $birdSale->id,
+                externalTransactionId: $extId,
                 amount: (float) $totalAmount,
                 date: $birdSale->date->format('Y-m-d'),
                 channel: 'cash',
@@ -227,7 +240,7 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            if ($this->succeeded($result, $birdSale)) {
+            if ($this->succeeded($result, $birdSale, $extId)) {
                 return true;
             }
 
@@ -252,10 +265,11 @@ class PriorityBankIntegrationService
 
         try {
             $totalAmount = $cropSale->quantity_sold * $cropSale->price_per_unit;
+            $extId = 'agri_crop_sale_' . $cropSale->id;
 
             $result = $this->client->pushIncome(
                 systemId: $this->systemId,
-                externalTransactionId: 'agri_crop_sale_' . $cropSale->id,
+                externalTransactionId: $extId,
                 amount: (float) $totalAmount,
                 date: $cropSale->date->format('Y-m-d'),
                 channel: 'cash',
@@ -272,7 +286,7 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            if ($this->succeeded($result, $cropSale)) {
+            if ($this->succeeded($result, $cropSale, $extId)) {
                 return true;
             }
 
@@ -296,12 +310,8 @@ class PriorityBankIntegrationService
         }
 
         try {
-            $extId = $expense->external_transaction_id ?? ('agri_poultry_expense_' . $expense->id);
-            if (empty($expense->external_transaction_id)) {
-                $expense->external_transaction_id = $extId;
-                $expense->save();
-            }
-            $legacyCategory = $expense->getRawOriginal('category'); // legacy string column (pre category_id)
+            $extId = $expense->external_transaction_id ?: ('agri_poultry_expense_' . $expense->id);
+            $legacyCategory = $expense->getRawOriginal('category');
             $categoryName = $expense->expenseCategory?->name ?? ($legacyCategory ?: null);
             $result = $this->client->pushExpense(
                 systemId: $this->systemId,
@@ -320,7 +330,7 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            if ($this->succeeded($result, $expense)) {
+            if ($this->succeeded($result, $expense, $extId)) {
                 return true;
             }
 
@@ -344,9 +354,11 @@ class PriorityBankIntegrationService
         }
 
         try {
+            $extId = 'agri_crop_expense_' . $expense->id;
+
             $result = $this->client->pushExpense(
                 systemId: $this->systemId,
-                externalTransactionId: 'agri_crop_expense_' . $expense->id,
+                externalTransactionId: $extId,
                 amount: (float) $expense->amount,
                 date: $expense->date->format('Y-m-d'),
                 channel: 'cash',
@@ -360,7 +372,7 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            if ($this->succeeded($result, $expense)) {
+            if ($this->succeeded($result, $expense, $extId)) {
                 return true;
             }
 
@@ -377,10 +389,10 @@ class PriorityBankIntegrationService
     /**
      * @param  array<string, mixed>|null  $result
      */
-    protected function succeeded(?array $result, Model $model): bool
+    protected function succeeded(?array $result, Model $model, string $externalTransactionId): bool
     {
         if ($result && ($result['success'] ?? false)) {
-            $this->markSynced($model);
+            $this->markSynced($model, $externalTransactionId);
 
             return true;
         }
