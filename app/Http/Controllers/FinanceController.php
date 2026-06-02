@@ -4,138 +4,158 @@ namespace App\Http\Controllers;
 
 use App\Models\Income;
 use App\Models\EggSale;
+use App\Models\EggClientSale;
 use App\Models\BirdSale;
 use App\Models\CropSale;
+use App\Models\CropInputExpense;
 use App\Models\PoultryExpense;
-use App\Models\SystemSetting;
-use App\Services\PriorityBankApiClient;
-use App\Services\PriorityBankIntegrationService;
+use App\Services\PriorityBankSyncService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class FinanceController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, PriorityBankSyncService $syncService)
     {
         $from = $request->input('from');
         $to = $request->input('to');
 
-        $manualQuery = Income::query();
-        if ($from) {
-            $manualQuery->where('received_on', '>=', $from);
-        }
-        if ($to) {
-            $manualQuery->where('received_on', '<=', $to);
-        }
+        $manualIncomes = Income::query()
+            ->when($from, fn ($q) => $q->whereDate('received_on', '>=', $from))
+            ->when($to, fn ($q) => $q->whereDate('received_on', '<=', $to))
+            ->get()
+            ->map(fn ($income) => $this->ledgerRow(
+                date: $income->received_on,
+                entryType: 'income',
+                category: $income->category,
+                description: $income->description ?? '—',
+                amount: (float) $income->amount,
+                externalId: $income->external_transaction_id,
+                source: 'Manual',
+                syncedAt: $income->priority_bank_synced_at ?? null,
+                syncRoute: route('finance.income.sync', $income),
+            ));
 
-        $manualIncomes = $manualQuery->get()->map(function ($income) {
-            return (object) [
-                'date' => $income->received_on,
-                'entry_type' => 'income',
-                'category' => $income->category,
-                'description' => $income->description ?? '—',
-                'amount' => (float) $income->amount,
-                'external_transaction_id' => $income->external_transaction_id,
-                'sync_route' => route('finance.income.sync', $income),
-                'can_sync' => true,
-                'source' => 'Manual',
-            ];
-        });
+        $eggClientSales = EggClientSale::query()
+            ->with('items')
+            ->when($from, fn ($q) => $q->whereDate('date', '>=', $from))
+            ->when($to, fn ($q) => $q->whereDate('date', '<=', $to))
+            ->get()
+            ->map(function ($sale) {
+                $received = (float) $sale->amount_paid;
+                $description = 'Egg client sale' . ($sale->buyer_name ? " - {$sale->buyer_name}" : '');
+                if ($received > 0 && $received < $sale->total_amount) {
+                    $description .= ' (received ₵' . number_format($received, 2) . ' of ₵' . number_format($sale->total_amount, 2) . ')';
+                }
 
-        $eggSalesQuery = EggSale::query();
-        if ($from) {
-            $eggSalesQuery->whereDate('date', '>=', $from);
-        }
-        if ($to) {
-            $eggSalesQuery->whereDate('date', '<=', $to);
-        }
-        $eggSales = $eggSalesQuery->get()->map(function ($sale) {
-            return (object) [
-                'date' => $sale->date,
-                'entry_type' => 'income',
-                'category' => 'Egg Sales',
-                'description' => trim("Egg sale: {$sale->quantity_sold} {$sale->unit_type}" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
-                'amount' => (float) ($sale->quantity_sold * $sale->price_per_unit),
-                'external_transaction_id' => 'agri_egg_sale_' . $sale->id,
-                'sync_route' => null,
-                'can_sync' => false,
-                'source' => 'Auto (Sales)',
-            ];
-        });
+                return $this->ledgerRow(
+                    date: $sale->date,
+                    entryType: 'income',
+                    category: 'Egg Sales',
+                    description: $description,
+                    amount: (float) $sale->total_amount,
+                    externalId: 'agri_egg_client_sale_' . $sale->id,
+                    source: 'Auto (Egg Sales)',
+                    syncedAt: $sale->priority_bank_synced_at ?? null,
+                    syncRoute: null,
+                    canSync: $received > 0,
+                );
+            });
 
-        $birdSalesQuery = BirdSale::query();
-        if ($from) {
-            $birdSalesQuery->whereDate('date', '>=', $from);
-        }
-        if ($to) {
-            $birdSalesQuery->whereDate('date', '<=', $to);
-        }
-        $birdSales = $birdSalesQuery->get()->map(function ($sale) {
-            return (object) [
-                'date' => $sale->date,
-                'entry_type' => 'income',
-                'category' => 'Bird Sales',
-                'description' => trim("Bird sale: {$sale->quantity_sold} birds" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
-                'amount' => (float) ($sale->quantity_sold * $sale->price_per_bird),
-                'external_transaction_id' => 'agri_bird_sale_' . $sale->id,
-                'sync_route' => null,
-                'can_sync' => false,
-                'source' => 'Auto (Sales)',
-            ];
-        });
+        $legacyEggSales = EggSale::query()
+            ->whereNull('egg_client_sale_id')
+            ->when($from, fn ($q) => $q->whereDate('date', '>=', $from))
+            ->when($to, fn ($q) => $q->whereDate('date', '<=', $to))
+            ->get()
+            ->map(fn ($sale) => $this->ledgerRow(
+                date: $sale->date,
+                entryType: 'income',
+                category: 'Egg Sales',
+                description: trim("Egg sale: {$sale->quantity_sold} {$sale->unit_type}" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
+                amount: (float) ($sale->quantity_sold * $sale->price_per_unit),
+                externalId: 'agri_egg_sale_' . $sale->id,
+                source: 'Auto (Egg Sales)',
+                syncedAt: $sale->priority_bank_synced_at ?? null,
+                syncRoute: null,
+            ));
 
-        $cropSalesQuery = CropSale::query();
-        if ($from) {
-            $cropSalesQuery->whereDate('date', '>=', $from);
-        }
-        if ($to) {
-            $cropSalesQuery->whereDate('date', '<=', $to);
-        }
-        $cropSales = $cropSalesQuery->get()->map(function ($sale) {
-            return (object) [
-                'date' => $sale->date,
-                'entry_type' => 'income',
-                'category' => 'Crop Sales',
-                'description' => trim("Crop sale: {$sale->quantity_sold} units" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
-                'amount' => (float) ($sale->quantity_sold * $sale->price_per_unit),
-                'external_transaction_id' => 'agri_crop_sale_' . $sale->id,
-                'sync_route' => null,
-                'can_sync' => false,
-                'source' => 'Auto (Sales)',
-            ];
-        });
+        $birdSales = BirdSale::query()
+            ->when($from, fn ($q) => $q->whereDate('date', '>=', $from))
+            ->when($to, fn ($q) => $q->whereDate('date', '<=', $to))
+            ->get()
+            ->map(fn ($sale) => $this->ledgerRow(
+                date: $sale->date,
+                entryType: 'income',
+                category: 'Bird Sales',
+                description: trim("Bird sale: {$sale->quantity_sold} birds" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
+                amount: (float) ($sale->quantity_sold * $sale->price_per_bird),
+                externalId: 'agri_bird_sale_' . $sale->id,
+                source: 'Auto (Bird Sales)',
+                syncedAt: $sale->priority_bank_synced_at ?? null,
+                syncRoute: null,
+            ));
 
-        $expenseQuery = PoultryExpense::with(['farm', 'expenseCategory']);
-        if ($from) {
-            $expenseQuery->where('date', '>=', $from);
-        }
-        if ($to) {
-            $expenseQuery->where('date', '<=', $to);
-        }
-        $expenses = $expenseQuery->get()->map(function ($expense) {
-            $categoryName = $expense->expenseCategory?->name ?? ($expense->getRawOriginal('category') ?: 'Uncategorized');
-            return (object) [
-                'date' => $expense->date,
-                'entry_type' => 'expense',
-                'category' => $categoryName,
-                'description' => $expense->description ?? '—',
-                'amount' => (float) $expense->amount,
-                'external_transaction_id' => $expense->external_transaction_id,
-                'sync_route' => route('finance.expenditure.sync', $expense),
-                'can_sync' => true,
-                'source' => 'Expense',
-            ];
-        });
+        $cropSales = CropSale::query()
+            ->when($from, fn ($q) => $q->whereDate('date', '>=', $from))
+            ->when($to, fn ($q) => $q->whereDate('date', '<=', $to))
+            ->get()
+            ->map(fn ($sale) => $this->ledgerRow(
+                date: $sale->date,
+                entryType: 'income',
+                category: 'Crop Sales',
+                description: trim("Crop sale: {$sale->quantity_sold} units" . ($sale->buyer_name ? " - Buyer: {$sale->buyer_name}" : '')),
+                amount: (float) ($sale->quantity_sold * $sale->price_per_unit),
+                externalId: 'agri_crop_sale_' . $sale->id,
+                source: 'Auto (Crop Sales)',
+                syncedAt: $sale->priority_bank_synced_at ?? null,
+                syncRoute: null,
+            ));
+
+        $poultryExpenses = PoultryExpense::query()
+            ->with(['farm', 'expenseCategory'])
+            ->when($from, fn ($q) => $q->whereDate('date', '>=', $from))
+            ->when($to, fn ($q) => $q->whereDate('date', '<=', $to))
+            ->get()
+            ->map(function ($expense) {
+                $categoryName = $expense->expenseCategory?->name ?? ($expense->getRawOriginal('category') ?: 'Uncategorized');
+
+                return $this->ledgerRow(
+                    date: $expense->date,
+                    entryType: 'expense',
+                    category: $categoryName,
+                    description: $expense->description ?? '—',
+                    amount: (float) $expense->amount,
+                    externalId: $expense->external_transaction_id ?? ('agri_poultry_expense_' . $expense->id),
+                    source: 'Poultry Expense',
+                    syncedAt: $expense->priority_bank_synced_at ?? null,
+                    syncRoute: route('finance.expenditure.sync', $expense),
+                );
+            });
+
+        $cropExpenses = CropInputExpense::query()
+            ->when($from, fn ($q) => $q->whereDate('date', '>=', $from))
+            ->when($to, fn ($q) => $q->whereDate('date', '<=', $to))
+            ->get()
+            ->map(fn ($expense) => $this->ledgerRow(
+                date: $expense->date,
+                entryType: 'expense',
+                category: $expense->category ?? 'Crop Input',
+                description: $expense->description ?? '—',
+                amount: (float) $expense->amount,
+                externalId: 'agri_crop_expense_' . $expense->id,
+                source: 'Crop Expense',
+                syncedAt: $expense->priority_bank_synced_at ?? null,
+                syncRoute: null,
+            ));
 
         $rows = $manualIncomes
-            ->concat($eggSales)
+            ->concat($eggClientSales)
+            ->concat($legacyEggSales)
             ->concat($birdSales)
             ->concat($cropSales)
-            ->concat($expenses)
-            ->sortByDesc(function ($row) {
-                return optional($row->date)->toDateString();
-            })
+            ->concat($poultryExpenses)
+            ->concat($cropExpenses)
+            ->sortByDesc(fn ($row) => optional($row->date)->toDateString())
             ->values();
 
         $page = LengthAwarePaginator::resolveCurrentPage();
@@ -155,8 +175,45 @@ class FinanceController extends Controller
         $incomeTotal = (float) $rows->where('entry_type', 'income')->sum('amount');
         $expenseTotal = (float) $rows->where('entry_type', 'expense')->sum('amount');
         $balance = $incomeTotal - $expenseTotal;
+        $pendingSync = $syncService->countPending($from, $to);
+        $bankConfigured = $syncService->isConfigured();
 
-        return view('finance.index', compact('ledger', 'incomeTotal', 'expenseTotal', 'balance'));
+        return view('finance.index', compact(
+            'ledger',
+            'incomeTotal',
+            'expenseTotal',
+            'balance',
+            'pendingSync',
+            'bankConfigured',
+        ));
+    }
+
+    public function bulkSync(Request $request, PriorityBankSyncService $syncService)
+    {
+        if (! $syncService->isConfigured()) {
+            return redirect()->route('finance.index', $request->only(['from', 'to']))
+                ->with('error', 'Priority Bank sync is not configured. Set API URL and API Token in Settings → Priority Bank.');
+        }
+
+        $results = $syncService->syncAll($request->input('from'), $request->input('to'));
+
+        if (($results['synced'] ?? 0) === 0 && ($results['failed'] ?? 0) === 0) {
+            return redirect()->route('finance.index', $request->only(['from', 'to']))
+                ->with('info', 'All records in this range are already synced to Priority Bank.');
+        }
+
+        if (! empty($results['errors']) && ($results['synced'] ?? 0) === 0) {
+            return redirect()->route('finance.index', $request->only(['from', 'to']))
+                ->with('error', $results['errors'][0]);
+        }
+
+        $message = ($results['synced'] ?? 0) . ' record(s) synced to Priority Bank.';
+        if (($results['failed'] ?? 0) > 0) {
+            $message .= ' ' . $results['failed'] . ' failed.';
+        }
+
+        return redirect()->route('finance.index', $request->only(['from', 'to']))
+            ->with(($results['synced'] ?? 0) > 0 ? 'success' : 'info', $message);
     }
 
     public function incomeIndex(Request $request)
@@ -180,43 +237,22 @@ class FinanceController extends Controller
             'external_transaction_id' => ['nullable', 'string', 'max:64'],
         ]);
         Income::create($validated);
+
         return redirect()->route('finance.income.index')->with('success', 'Income record added successfully.');
     }
 
-    public function incomeSync(Income $income)
+    public function incomeSync(Income $income, PriorityBankSyncService $syncService)
     {
-        $baseUrl = rtrim((string) (SystemSetting::get('priority_bank_api_url') ?: config('services.priority_bank.api_url', '')), '/');
-        $token = SystemSetting::get('priority_bank_api_token') ?: config('services.priority_bank.api_token');
-        $systemId = SystemSetting::get('priority_bank_system_id') ?: config('services.priority_bank.system_id', 'priority_agriculture');
-
-        if (! $baseUrl || ! $token) {
-            return redirect()->route('finance.income.index')
-                ->with('error', 'Priority Bank sync is not configured. Set API URL and API Token in Settings → Priority Bank, or in .env.');
+        if (! $syncService->isConfigured()) {
+            return redirect()->route('finance.index')
+                ->with('error', 'Priority Bank sync is not configured. Set API URL and API Token in Settings → Priority Bank.');
         }
 
-        if (empty($income->external_transaction_id)) {
-            $income->external_transaction_id = str_pad((string) random_int(0, 9999999999), 10, '0', STR_PAD_LEFT);
-            $income->save();
+        if ($syncService->syncIncome($income)) {
+            return redirect()->route('finance.index')->with('success', 'Income synced to Priority Bank successfully.');
         }
 
-        $client = new PriorityBankApiClient($baseUrl, $token);
-        $result = $client->pushIncome(
-            $systemId,
-            $income->external_transaction_id,
-            (float) $income->amount,
-            $income->received_on ? \Carbon\Carbon::parse($income->received_on)->format('Y-m-d') : null,
-            'bank',
-            [
-                'notes' => $income->description ?? $income->category,
-                'income_category_name' => $income->category,
-            ]
-        );
-
-        if ($result && ($result['success'] ?? false)) {
-            return redirect()->route('finance.income.index')->with('success', 'Income synced to Priority Bank successfully.');
-        }
-        Log::warning('Priority Bank income sync failed', ['income_id' => $income->id, 'response' => $result]);
-        return redirect()->route('finance.income.index')->with('error', 'Bank sync failed. Check Settings → Priority Bank and try again.');
+        return redirect()->route('finance.index')->with('error', 'Bank sync failed. Check Settings → Priority Bank and try again.');
     }
 
     public function expenditureIndex(Request $request)
@@ -224,43 +260,50 @@ class FinanceController extends Controller
         return redirect()->route('finance.index', $request->query());
     }
 
-    public function expenditureSync(PoultryExpense $expense)
+    public function expenditureSync(PoultryExpense $expense, PriorityBankSyncService $syncService)
     {
-        $baseUrl = rtrim((string) (SystemSetting::get('priority_bank_api_url') ?: config('services.priority_bank.api_url', '')), '/');
-        $token = SystemSetting::get('priority_bank_api_token') ?: config('services.priority_bank.api_token');
-        $systemId = SystemSetting::get('priority_bank_system_id') ?: config('services.priority_bank.system_id', 'priority_agriculture');
-
-        if (! $baseUrl || ! $token) {
-            return redirect()->route('finance.expenditure.index')
-                ->with('error', 'Priority Bank sync is not configured. Set API URL and API Token in Settings → Priority Bank, or in .env.');
+        if (! $syncService->isConfigured()) {
+            return redirect()->route('finance.index')
+                ->with('error', 'Priority Bank sync is not configured. Set API URL and API Token in Settings → Priority Bank.');
         }
 
-        $extId = $expense->external_transaction_id;
-        if (empty($extId)) {
-            $extId = str_pad((string) random_int(0, 9999999999), 10, '0', STR_PAD_LEFT);
-            $expense->external_transaction_id = $extId;
-            $expense->save();
+        if ($syncService->syncPoultryExpense($expense)) {
+            return redirect()->route('finance.index')->with('success', 'Expenditure synced to Priority Bank successfully.');
         }
 
-        $client = new PriorityBankApiClient($baseUrl, $token);
-        $legacyCategory = $expense->getRawOriginal('category');
-        $categoryName = $expense->expenseCategory?->name ?? $legacyCategory ?? $expense->category ?? 'Expense';
-        $result = $client->pushExpense(
-            $systemId,
-            $extId,
-            (float) $expense->amount,
-            $expense->date ? \Carbon\Carbon::parse($expense->date)->format('Y-m-d') : null,
-            'bank',
-            [
-                'notes' => $expense->description ?? $categoryName,
-                'expense_category_name' => $categoryName,
-            ]
-        );
+        return redirect()->route('finance.index')->with('error', 'Bank sync failed. Check Settings → Priority Bank and try again.');
+    }
 
-        if ($result && ($result['success'] ?? false)) {
-            return redirect()->route('finance.expenditure.index')->with('success', 'Expenditure synced to Priority Bank successfully.');
-        }
-        Log::warning('Priority Bank expenditure sync failed', ['expense_id' => $expense->id, 'response' => $result]);
-        return redirect()->route('finance.expenditure.index')->with('error', 'Bank sync failed. Check Settings → Priority Bank and try again.');
+    protected function ledgerRow(
+        $date,
+        string $entryType,
+        string $category,
+        string $description,
+        float $amount,
+        ?string $externalId,
+        string $source,
+        $syncedAt,
+        ?string $syncRoute = null,
+        bool $canSync = true,
+    ): object {
+        $bankSynced = $syncedAt !== null;
+
+        return (object) [
+            'date' => $date,
+            'entry_type' => $entryType,
+            'category' => $category,
+            'description' => $description,
+            'amount' => $amount,
+            'external_transaction_id' => $externalId,
+            'source' => $source,
+            'bank_synced' => $bankSynced,
+            'sync_route' => $syncRoute,
+            'can_sync' => $canSync && ! $bankSynced && ($syncRoute !== null || in_array($source, [
+                'Auto (Egg Sales)',
+                'Auto (Bird Sales)',
+                'Auto (Crop Sales)',
+                'Crop Expense',
+            ], true)),
+        ];
     }
 }

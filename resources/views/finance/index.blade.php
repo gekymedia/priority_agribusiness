@@ -14,6 +14,12 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 @endif
+@if(session('info'))
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        {{ session('info') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
 @if(session('error'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         {{ session('error') }}
@@ -21,22 +27,72 @@
     </div>
 @endif
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div class="d-flex gap-2">
+@if(!($bankConfigured ?? false))
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Priority Bank is not configured. Add your API URL and token under <a href="{{ route('settings.index') }}">Settings → Priority Bank</a> to sync records.
+    </div>
+@endif
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div class="d-flex gap-2 flex-wrap">
         <a href="{{ route('finance.income.create') }}" class="btn btn-primary">
             <i class="fas fa-arrow-down me-2"></i>Add Income
         </a>
         <a href="{{ route('expenses.create') }}" class="btn btn-outline-primary">
             <i class="fas fa-arrow-up me-2"></i>Add Expense
         </a>
+        @if($bankConfigured ?? false)
+            <form action="{{ route('finance.sync-all') }}" method="POST" class="d-inline" data-sync-form
+                  onsubmit="return confirm('Sync all unsynced records{{ ($pendingSync['total'] ?? 0) > 0 ? ' (' . $pendingSync['total'] . ' pending)' : '' }} to Priority Bank?');">
+                @csrf
+                @if(request('from'))<input type="hidden" name="from" value="{{ request('from') }}">@endif
+                @if(request('to'))<input type="hidden" name="to" value="{{ request('to') }}">@endif
+                <button type="submit" class="btn btn-success" {{ ($pendingSync['total'] ?? 0) === 0 ? 'disabled' : '' }}>
+                    <i class="fas fa-cloud-upload-alt me-2"></i>Sync All to Bank
+                    @if(($pendingSync['total'] ?? 0) > 0)
+                        <span class="badge bg-light text-success ms-1">{{ $pendingSync['total'] }}</span>
+                    @endif
+                </button>
+            </form>
+        @endif
     </div>
-    <form method="GET" class="d-flex gap-2">
+    <form method="GET" class="d-flex gap-2 flex-wrap">
         <input type="date" name="from" value="{{ request('from') }}" class="form-control">
         <input type="date" name="to" value="{{ request('to') }}" class="form-control">
         <button class="btn btn-secondary" type="submit">Filter</button>
         <a href="{{ route('finance.index') }}" class="btn btn-light">Clear</a>
     </form>
 </div>
+
+@if($bankConfigured ?? false)
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="agri-card border-success-subtle">
+            <div class="agri-card-body py-3">
+                <div class="text-muted small">Pending income sync</div>
+                <h5 class="mb-0 text-success">{{ number_format($pendingSync['income'] ?? 0) }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="agri-card border-danger-subtle">
+            <div class="agri-card-body py-3">
+                <div class="text-muted small">Pending expense sync</div>
+                <h5 class="mb-0 text-danger">{{ number_format($pendingSync['expense'] ?? 0) }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="agri-card">
+            <div class="agri-card-body py-3">
+                <div class="text-muted small">Total pending bank sync</div>
+                <h5 class="mb-0">{{ number_format($pendingSync['total'] ?? 0) }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
 <div class="row g-3 mb-4">
     <div class="col-md-4">
@@ -78,6 +134,7 @@
                         <th>Source</th>
                         <th>Amount</th>
                         <th>External ID</th>
+                        <th>Bank</th>
                         <th>Sync</th>
                     </tr>
                 </thead>
@@ -102,21 +159,30 @@
                             </td>
                             <td class="text-muted small">{{ $row->external_transaction_id ?? '—' }}</td>
                             <td>
-                                @if($row->can_sync && $row->sync_route)
+                                @if($row->bank_synced)
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Synced</span>
+                                @else
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($row->can_sync && $row->sync_route && ! $row->bank_synced)
                                     <form action="{{ $row->sync_route }}" method="POST" class="d-inline" data-sync-form>
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-outline-primary" title="Sync with Priority Bank">
                                             <i class="fas fa-sync-alt"></i>
                                         </button>
                                     </form>
+                                @elseif(! $row->bank_synced && ($bankConfigured ?? false))
+                                    <span class="text-muted small" title="Use Sync All to Bank">Bulk</span>
                                 @else
-                                    <span class="badge bg-light text-muted">N/A</span>
+                                    <span class="text-muted">—</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5">
+                            <td colspan="9" class="text-center py-5">
                                 <i class="fas fa-wallet fa-3x text-muted mb-3"></i>
                                 <p class="text-muted mb-0">No finance records found</p>
                             </td>
@@ -136,7 +202,11 @@
 document.querySelectorAll('[data-sync-form]').forEach(function(f) {
     f.addEventListener('submit', function() {
         var btn = this.querySelector('button[type="submit"]');
-        if (btn) { btn.disabled = true; btn.querySelector('i').classList.add('fa-spin'); }
+        if (btn) {
+            btn.disabled = true;
+            var icon = btn.querySelector('i');
+            if (icon) icon.classList.add('fa-spin');
+        }
     });
 });
 </script>

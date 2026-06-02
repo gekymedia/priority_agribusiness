@@ -8,9 +8,12 @@ use App\Models\BirdSale;
 use App\Models\CropSale;
 use App\Models\PoultryExpense;
 use App\Models\CropInputExpense;
+use App\Models\Income;
 use App\Models\SystemSetting;
 use App\Services\PriorityBankApiClient;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class PriorityBankIntegrationService
 {
@@ -68,7 +71,11 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            return $result && $result['success'];
+            if ($this->succeeded($result, $eggSale)) {
+                return true;
+            }
+
+            return false;
         } catch (\Exception $e) {
             Log::error('Exception pushing egg sale to Priority Bank', [
                 'egg_sale_id' => $eggSale->id,
@@ -76,6 +83,57 @@ class PriorityBankIntegrationService
             ]);
             return false;
         }
+    }
+
+    /**
+     * Push manual income record to Priority Bank.
+     */
+    public function pushManualIncome(Income $income): bool
+    {
+        if (! SystemSetting::get('priority_bank_api_token') && ! config('services.priority_bank.api_token')) {
+            return false;
+        }
+
+        try {
+            if (empty($income->external_transaction_id)) {
+                $income->external_transaction_id = str_pad((string) random_int(0, 9999999999), 10, '0', STR_PAD_LEFT);
+                $income->save();
+            }
+
+            $result = $this->client->pushIncome(
+                systemId: $this->systemId,
+                externalTransactionId: $income->external_transaction_id,
+                amount: (float) $income->amount,
+                date: $income->received_on?->format('Y-m-d') ?? now()->format('Y-m-d'),
+                channel: 'bank',
+                options: [
+                    'notes' => $income->description ?? $income->category,
+                    'income_category_name' => $income->category,
+                ]
+            );
+
+            if ($this->succeeded($result, $income)) {
+                return true;
+            }
+
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Exception pushing manual income to Priority Bank', [
+                'income_id' => $income->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    protected function markSynced(Model $model): void
+    {
+        if (! Schema::hasColumn($model->getTable(), 'priority_bank_synced_at')) {
+            return;
+        }
+
+        $model->forceFill(['priority_bank_synced_at' => now()])->save();
     }
 
     /**
@@ -122,7 +180,11 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            return $result && $result['success'];
+            if ($this->succeeded($result, $clientSale)) {
+                return true;
+            }
+
+            return false;
         } catch (\Exception $e) {
             Log::error('Exception pushing egg client sale to Priority Bank', [
                 'egg_client_sale_id' => $clientSale->id,
@@ -165,7 +227,11 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            return $result && $result['success'];
+            if ($this->succeeded($result, $birdSale)) {
+                return true;
+            }
+
+            return false;
         } catch (\Exception $e) {
             Log::error('Exception pushing bird sale to Priority Bank', [
                 'bird_sale_id' => $birdSale->id,
@@ -206,7 +272,11 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            return $result && $result['success'];
+            if ($this->succeeded($result, $cropSale)) {
+                return true;
+            }
+
+            return false;
         } catch (\Exception $e) {
             Log::error('Exception pushing crop sale to Priority Bank', [
                 'crop_sale_id' => $cropSale->id,
@@ -227,6 +297,10 @@ class PriorityBankIntegrationService
 
         try {
             $extId = $expense->external_transaction_id ?? ('agri_poultry_expense_' . $expense->id);
+            if (empty($expense->external_transaction_id)) {
+                $expense->external_transaction_id = $extId;
+                $expense->save();
+            }
             $legacyCategory = $expense->getRawOriginal('category'); // legacy string column (pre category_id)
             $categoryName = $expense->expenseCategory?->name ?? ($legacyCategory ?: null);
             $result = $this->client->pushExpense(
@@ -246,7 +320,11 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            return $result && $result['success'];
+            if ($this->succeeded($result, $expense)) {
+                return true;
+            }
+
+            return false;
         } catch (\Exception $e) {
             Log::error('Exception pushing poultry expense to Priority Bank', [
                 'expense_id' => $expense->id,
@@ -282,7 +360,11 @@ class PriorityBankIntegrationService
                 ]
             );
 
-            return $result && $result['success'];
+            if ($this->succeeded($result, $expense)) {
+                return true;
+            }
+
+            return false;
         } catch (\Exception $e) {
             Log::error('Exception pushing crop expense to Priority Bank', [
                 'expense_id' => $expense->id,
@@ -290,6 +372,20 @@ class PriorityBankIntegrationService
             ]);
             return false;
         }
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $result
+     */
+    protected function succeeded(?array $result, Model $model): bool
+    {
+        if ($result && ($result['success'] ?? false)) {
+            $this->markSynced($model);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
