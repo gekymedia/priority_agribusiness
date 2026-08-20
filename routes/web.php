@@ -58,6 +58,9 @@ Route::get('/store/payment/callback', [EggStoreController::class, 'paymentCallba
 Route::get('/store/order/{order}/pending', [EggStoreController::class, 'orderPending'])->name('store.order.pending');
 Route::get('/store/order/{order}/success', [EggStoreController::class, 'orderSuccess'])->name('store.order.success');
 
+Route::get('auth/google/callback', [\App\Http\Controllers\Admin\GoogleAuthController::class, 'callback'])
+    ->name('google-auth.callback.public');
+
 // Legal Pages
 Route::view('/privacy-policy', 'legal.privacy-policy')->name('privacy.policy');
 Route::view('/terms-of-service', 'legal.terms-of-service')->name('terms.service');
@@ -173,6 +176,13 @@ Route::middleware('auth.users')->group(function () {
     Route::put('/settings/priority-bank', [SettingsController::class, 'updatePriorityBank'])->name('settings.priority-bank.update');
     Route::get('/payment-settings', [PaymentSettingsController::class, 'index'])->name('payment-settings.index');
     Route::put('/payment-settings', [PaymentSettingsController::class, 'update'])->name('payment-settings.update');
+
+    Route::get('google/start', [\App\Http\Controllers\Admin\GoogleAuthController::class, 'start'])->name('google-auth.start');
+
+    Route::prefix('backups')->name('backups.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\BackupsController::class, 'index'])->name('index');
+        Route::get('/status', [\App\Http\Controllers\Admin\BackupsController::class, 'status'])->name('status');
+    });
 
     // System Logs (Laravel log files)
     Route::prefix('logs')->name('logs.')->group(function () {

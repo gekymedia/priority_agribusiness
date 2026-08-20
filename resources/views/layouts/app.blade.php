@@ -839,6 +839,12 @@
                     <span>System Logs</span>
                 </a>
             </div>
+            <div class="sidebar-menu-item">
+                <a href="{{ route('backups.index') }}" class="sidebar-link {{ request()->routeIs('backups.*') ? 'active' : '' }}">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Backups</span>
+                </a>
+            </div>
             @endif
             
             @if($isEmployee)

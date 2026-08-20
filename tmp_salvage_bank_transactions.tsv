@@ -1,0 +1,210 @@
+id	type	category	amount	date	external_transaction_id	desc_notes	created_at
+370	expense	Feed	11350.00	2025-12-31	agri_poultry_expense_74	Legacy Feed Expense\n\nBatch 1 (Aug–Dec > 21wks): GHC 6,850  \nBatch 2 (Sep–Dec > 15wks): GHC 4,500	2026-03-30 20:11:57
+371	expense	Medication	1100.00	2025-12-31	agri_poultry_expense_75	Legacy Expenses\nMedication & Vet (Aug–Dec): GHC 1,100	2026-03-30 20:13:02
+375	expense	Other Expenses	71200.00	2025-12-31	agri_poultry_expense_79	POULTRY BUILDING COST BREAKDOWN\n\nMason workmanship — GHC 3,800  \nCarpenter workmanship — GHC 5,000  \nBattery Cage Materials & Workmanship — GHC 2,200  \nRoofing Sheets — GHC 13,000  \nWood for Roo	2026-03-30 20:33:31
+74	expense	Other Expenses	70.00	2026-01-21	agri_poultry_expense_10	Transportation of water gallons	2026-03-15 08:21:18
+87	expense	Feed	260.00	2026-02-28	agri_poultry_expense_23	Batch3 starter Feed	2026-03-15 08:21:20
+93	expense	Feed	520.00	2026-02-28	agri_poultry_expense_29	Chicken feed (2 bags)	2026-03-15 08:21:21
+96	expense	Medication	18.00	2026-02-28	agri_poultry_expense_32	Glucose for old birds	2026-03-15 08:21:21
+75	expense	Other Expenses	60.00	2026-03-02	agri_poultry_expense_11	Bending wire	2026-03-15 08:21:18
+76	expense	Other Expenses	40.00	2026-03-02	agri_poultry_expense_12	Polythene	2026-03-15 08:21:18
+77	expense	Other Expenses	50.00	2026-03-02	agri_poultry_expense_13	Plastic bags	2026-03-15 08:21:19
+78	expense	Feed	260.00	2026-03-02	agri_poultry_expense_14	Chicken feed	2026-03-15 08:21:19
+79	expense	Other Expenses	100.00	2026-03-02	agri_poultry_expense_15	Plastic bags	2026-03-15 08:21:19
+80	expense	Other Expenses	30.00	2026-03-02	agri_poultry_expense_16	Sawdust transport	2026-03-15 08:21:19
+81	expense	Other Expenses	30.00	2026-03-02	agri_poultry_expense_17	Crutch wire	2026-03-15 08:21:19
+82	expense	Other Expenses	35.00	2026-03-02	agri_poultry_expense_18	Electrical materials	2026-03-15 08:21:19
+83	expense	Other Expenses	405.00	2026-03-02	agri_poultry_expense_19	Water tanker	2026-03-15 08:21:19
+84	expense	Other Expenses	140.00	2026-03-02	agri_poultry_expense_20	Charcoal	2026-03-15 08:21:20
+85	expense	Equipment	180.00	2026-03-02	agri_poultry_expense_21	Solar light	2026-03-15 08:21:20
+86	expense	Other Expenses	105.00	2026-03-02	agri_poultry_expense_22	Plastic bags	2026-03-15 08:21:20
+88	expense	Equipment	5.00	2026-03-02	agri_poultry_expense_24	Machete box	2026-03-15 08:21:20
+89	expense	Equipment	20.00	2026-03-02	agri_poultry_expense_25	Bucket for fire	2026-03-15 08:21:20
+90	expense	Equipment	85.00	2026-03-02	agri_poultry_expense_26	Drinker	2026-03-15 08:21:20
+98	expense	Other Expenses	303.00	2026-03-02	agri_poultry_expense_34	Hope phone & bicycle repairs	2026-03-15 08:21:21
+99	expense	Other Expenses	30.00	2026-03-02	agri_poultry_expense_35	Hope bike knoll & chain	2026-03-15 08:21:22
+100	expense	Other Expenses	10.00	2026-03-02	agri_poultry_expense_36	Hope bike workmanship	2026-03-15 08:21:22
+101	expense	Other Expenses	10.00	2026-03-02	agri_poultry_expense_37	Hope bike TNT	2026-03-15 08:21:22
+91	expense	Labor	20.00	2026-03-03	agri_poultry_expense_27	Nose mask	2026-03-15 08:21:21
+92	expense	Labor	30.00	2026-03-03	agri_poultry_expense_28	Gloves	2026-03-15 08:21:21
+95	expense	Equipment	45.00	2026-03-03	agri_poultry_expense_31	Cutlass for farm	2026-03-15 08:21:21
+97	expense	Labor	10.00	2026-03-03	agri_poultry_expense_33	Socks (Hope farm equipment)	2026-03-15 08:21:21
+60	income	Egg Sales	45.00	2026-03-07	agri_egg_sale_3	Egg sale: 1 crate @ 45 per unit - Buyer: Hope Shola - He bought for personal use and Sent the Money via MoMo	2026-03-14 17:33:53
+94	expense	Feed	260.00	2026-03-10	agri_poultry_expense_30	Poultry feed (3rd bag)	2026-03-15 08:21:21
+55	expense	Medication	35.00	2026-03-12	agri_poultry_expense_4	Medication	2026-03-14 17:25:02
+61	expense	Seeds	300.00	2026-03-12	agri_poultry_expense_7	Cassava Sticks\nGhc600 per Moto King	2026-03-14 18:06:31
+54	expense	Feed	3070.00	2026-03-13	agri_poultry_expense_3	STARTER FEED , kudos formula	2026-03-14 17:23:40
+56	expense	Other Expenses	560.00	2026-03-13	agri_poultry_expense_5	Wawa Board	2026-03-14 17:28:41
+57	expense	Other Expenses	150.00	2026-03-13	agri_poultry_expense_6	TRANSPORTATION OF FEED AND WAWA WOOD	2026-03-14 17:30:22
+58	income	Egg Sales	315.00	2026-03-13	agri_egg_sale_1	Egg sale: 7 crate @ 45 per unit - Buyer: HOPE SHOLLA - He bought 2 and Took 5 later	2026-03-14 17:31:54
+63	expense	Other Expenses	125.00	2026-03-13	agri_poultry_expense_9	Transportation's ghc250	2026-03-14 18:16:35
+59	income	Egg Sales	45.00	2026-03-14	agri_egg_sale_2	Egg sale: 1 crate @ 45 per unit - Buyer: Sister Mina - Gideon brought it to her	2026-03-14 17:32:41
+62	expense	Other Expenses	505.00	2026-03-14	agri_poultry_expense_8	The1010 Weeding for clearing the land	2026-03-14 18:11:01
+116	expense	Other Expenses	850.00	2026-03-18	agri_poultry_expense_38	10 Bags of Cement(gch750) and Transportation(ghc100)  for the flow	2026-03-18 20:52:45
+117	expense	Feed	4880.00	2026-03-18	agri_poultry_expense_39	Feed for Batch 1 and 2 (GHC4780) + Transportation to Grinding Mill (GHC100)	2026-03-18 20:54:41
+155	expense	Equipment	15.00	2026-03-19	agri_poultry_expense_54	Wheelbarrow	2026-03-20 20:48:31
+156	expense	Equipment	10.00	2026-03-19	agri_poultry_expense_55	Spade	2026-03-20 20:48:31
+139	income	Egg Sales	315.00	2026-03-20	agri_egg_sale_5	Egg sale: 7 crate @ 45 per unit - Buyer: HOPE	2026-03-20 20:39:12
+140	income	Egg Sales	40.00	2026-03-20	agri_egg_sale_6	Egg sale: 1 crate @ 40 per unit - Buyer: Sister Mina	2026-03-20 20:39:41
+141	expense	Other Expenses	1500.00	2026-03-20	agri_poultry_expense_40	Cement – 20 × 75	2026-03-20 20:48:29
+142	expense	Other Expenses	100.00	2026-03-20	agri_poultry_expense_41	Transport	2026-03-20 20:48:29
+143	expense	Other Expenses	1500.00	2026-03-20	agri_poultry_expense_42	Cement – 20 × 75	2026-03-20 20:48:29
+144	expense	Other Expenses	190.00	2026-03-20	agri_poultry_expense_43	Plywood – 2 × 95	2026-03-20 20:48:29
+145	expense	Other Expenses	100.00	2026-03-20	agri_poultry_expense_44	Transport	2026-03-20 20:48:30
+146	expense	Other Expenses	100.00	2026-03-20	agri_poultry_expense_45	Food Transport	2026-03-20 20:48:30
+147	expense	Other Expenses	510.00	2026-03-20	agri_poultry_expense_46	Wood	2026-03-20 20:48:30
+148	expense	Other Expenses	80.00	2026-03-20	agri_poultry_expense_47	Ceiling Batten	2026-03-20 20:48:30
+149	expense	Equipment	40.00	2026-03-20	agri_poultry_expense_48	Hammer	2026-03-20 20:48:30
+150	expense	Equipment	75.00	2026-03-20	agri_poultry_expense_49	Chain Saw	2026-03-20 20:48:30
+151	expense	Other Expenses	45.00	2026-03-20	agri_poultry_expense_50	Nails	2026-03-20 20:48:31
+152	expense	Other Expenses	100.00	2026-03-20	agri_poultry_expense_51	Transport of Tank	2026-03-20 20:48:31
+153	expense	Equipment	100.00	2026-03-20	agri_poultry_expense_52	Down Payment for Tank	2026-03-20 20:48:31
+154	expense	Labor	50.00	2026-03-20	agri_poultry_expense_53	Hope the care taker	2026-03-20 20:48:31
+157	expense	Other Expenses	200.00	2026-03-20	agri_poultry_expense_56	Water tanker water today	2026-03-20 20:51:16
+171	expense	Other Expenses	300.00	2026-03-21	agri_poultry_expense_57	Filling of Water . Poly tank and Hired Container	2026-03-23 04:56:08
+172	expense	Other Expenses	50.00	2026-03-21	agri_poultry_expense_58	Fueling of Gideons MoMo bike to the farms	2026-03-23 04:57:00
+173	expense	Medication	80.00	2026-03-21	agri_poultry_expense_59	Multivitamins \nConsidiostat	2026-03-23 04:58:37
+174	expense	Labor	1050.00	2026-03-21	agri_poultry_expense_60	Labour Cost for the Mason working on the floor	2026-03-23 04:59:53
+175	expense	Other Expenses	1600.00	2026-03-23	agri_poultry_expense_61	Ghc75x 20bags of Cements\nThey are using it to build a store room	2026-03-23 05:00:59
+188	expense	Labor	1010.00	2026-03-23	agri_poultry_expense_62	Part-Payment of the Poutry Farms to make it Ghc4000 , left with GHC1200 to finish it	2026-03-23 17:22:54
+202	expense	Other Expenses	30.00	2026-03-24	agri_poultry_expense_63	30 to gideon for fuel in transporting saw dust	2026-03-24 11:31:11
+203	income	Egg Sales	270.00	2026-03-24	agri_egg_sale_7	Egg sale: 6 crate @ 45 per unit - Buyer: HOPE SHOLA	2026-03-24 13:21:25
+236	expense	Labor	1010.00	2026-03-25	agri_poultry_expense_64	Part-Payment of the Poutry Farms to make it Ghc5000 , left with GHC1000 per new payment arrangment	2026-03-26 15:52:41
+225	income	Egg Sales	90.00	2026-03-26	agri_egg_sale_8	Egg sale: 2 crate @ 45 per unit - Buyer: HOPE SHOLA	2026-03-26 13:51:12
+226	income	Egg Sales	45.00	2026-03-26	agri_egg_sale_9	Egg sale: 1 tray @ 45 per unit - Buyer: GIDEON NYARKO	2026-03-26 13:51:34
+258	expense	Other Expenses	2675.00	2026-03-27	agri_poultry_expense_65	1.\tRoofing sheets – GHS 1,200\n\t2.\t4-inch nails – GHS 50\n\t3.\tQuarter rods – GHS 30\n\t4.\tRoofing nails – GHS 100\n\t5.\tFert – GHS 50\n\t6.\tArranged quarter rods – GHS 230\n\t7.\tTransport – GHS 100\n\t8.\tP	2026-03-27 16:40:53
+259	expense	Other Expenses	15000.00	2026-03-27	agri_poultry_expense_66	Day Old Chick's\n620 Pieces	2026-03-27 16:42:56
+265	expense	Housing	400.00	2026-03-28	agri_payroll_salary_3	Salary: Hope Shola Ade — Jan 2026	2026-03-28 09:08:12
+266	expense	Labor	500.00	2026-03-28	agri_payroll_salary_2	Salary: Hope Shola Ade — Feb 2026	2026-03-28 09:08:15
+267	expense	Labor	500.00	2026-03-28	agri_payroll_salary_1	Salary: Hope Shola Ade — Mar 2026	2026-03-28 09:08:19
+353	income	Egg Sales	90.00	2026-03-28	agri_egg_sale_10	Egg sale: 2 tray @ 45 per unit - Buyer: Ms Eunice	2026-03-29 23:42:35
+354	income	Egg Sales	45.00	2026-03-28	agri_egg_sale_11	Egg sale: 1 crate @ 45 per unit - Buyer: Eric the Mason	2026-03-29 23:43:40
+355	income	Egg Sales	225.00	2026-03-28	agri_egg_sale_12	Egg sale: 5 crate @ 45 per unit - Buyer: Hope Shola	2026-03-29 23:45:44
+374	expense	Other Expenses	20.00	2026-03-29	agri_poultry_expense_78	Charcoal	2026-03-30 20:17:02
+366	expense	Medication	283.00	2026-03-30	agri_poultry_expense_70	Glucose : 100\nDisinfectant :180\nSyringe: 3	2026-03-30 19:55:48
+367	expense	Labor	1000.00	2026-03-30	agri_poultry_expense_71	This Makes Ghc6000 since they started working	2026-03-30 19:56:37
+368	expense	Equipment	250.00	2026-03-30	agri_poultry_expense_72	FOR THE COST OF MAKING THE SHELVES FOR THE CHICKS AND THEN 50 for Nails for the roof	2026-03-30 20:02:34
+369	expense	Other Expenses	9680.00	2026-03-30	agri_poultry_expense_73	Order for 400 More chicks	2026-03-30 20:04:22
+372	expense	Medication	150.00	2026-03-30	agri_poultry_expense_76	Last Medication before laying	2026-03-30 20:13:43
+373	expense	Medication	70.00	2026-03-30	agri_poultry_expense_77	Othopsy at the very clinic	2026-03-30 20:14:47
+474	income	Egg Sales	45.00	2026-04-02	agri_egg_sale_15	Egg sale: 1 crate @ 45 per unit - Buyer: Sister Mina	2026-04-06 07:49:27
+473	income	Egg Sales	225.00	2026-04-03	agri_egg_sale_14	Egg sale: 5 crate @ 45 per unit - Buyer: Hope SHOLA	2026-04-06 07:36:33
+461	expense	Other Expenses	500.00	2026-04-04	agri_poultry_expense_80	Gave him 500 out of 1500 which is intended to cover for the cost of the Roofing of the Store House at the poultry	2026-04-04 20:05:26
+472	income	Egg Sales	855.00	2026-04-05	agri_egg_sale_13	Egg sale: 19 crate @ 45 per unit - Buyer: Market Woman	2026-04-06 07:35:47
+499	expense	Other Expenses	80.00	2026-04-08	agri_poultry_expense_81	Big Crates for the Bigger eggs , bought by Gideon	2026-04-08 12:16:35
+500	expense	Other Expenses	65.00	2026-04-08	agri_poultry_expense_82	Plumbing items for Poly Thank	2026-04-08 12:17:50
+501	expense	Other Expenses	3450.00	2026-04-08	agri_poultry_expense_83	2ND POLYTANK COST GHC3350 WITH TRANSPORTATION OF GHC100	2026-04-08 12:19:52
+515	expense	Feed	400.00	2026-04-08	agri_poultry_expense_84	Water got finished so we made the tank Car come and fill	2026-04-09 16:35:06
+527	expense	Equipment	465.00	2026-04-08	agri_poultry_expense_85	2.\tWorkmanship (Tank Tap) – GHS 40\n\t3.\tNyame Dua (70 × 3) – GHS 210\n\t4.\tWood (2 × 40) – GHS 80\n\t5.\tAdam and Eve – GHS 15\n\t6.\tNet and Locker – GHS 120	2026-04-10 16:26:20
+528	expense	Other Expenses	440.00	2026-04-08	agri_poultry_expense_86	7.\tWater Tank Transport – GHS 150\n\t8.\tTank Usage (17 days = GHS 340, paid GHS 100) – Balance: GHS 240\n\t9.\tFuel and MoMo Charges – GHS 50	2026-04-10 16:27:37
+536	income	Egg Sales	225.00	2026-04-09	agri_egg_sale_16	Egg sale: 5 crate @ 45 per unit - Buyer: Priority Admissions Office - Bought to Give as Gift to Admissions Office staff	2026-04-11 18:32:10
+537	income	Egg Sales	270.00	2026-04-09	agri_egg_sale_17	Egg sale: 6 crate @ 45 per unit - Buyer: Hope Shola - He is yet to bring the money for the last 5 and this 6	2026-04-11 18:34:15
+540	expense	Other Expenses	500.00	2026-04-09	agri_poultry_expense_90	I have Eric 500 in the evening through MoMo to make it 1000 leaving 500 for the final part of the carpentry work	2026-04-12 06:02:21
+529	expense	Seeds	852.50	2026-04-10	agri_poultry_expense_87	⸻\n\nEXPENSES B (Unpaid)\n\t1.\tWeedicides (4 bottles) – GHS 160\n\t2.\tWorkmanship for spraying – GHS 200\n\t3.\tRent of spraying machine – GHS 15\n\nSubtotal B = GHS 375\n\n⸻\n\nEXPENSES C (Sticks Plantin	2026-04-10 16:53:00
+538	expense	Labor	505.00	2026-04-11	agri_poultry_expense_88	Eric Final Payment for the work	2026-04-12 05:58:16
+539	expense	Other Expenses	303.00	2026-04-11	agri_poultry_expense_89	Cement Ghc255 and 45 for Door Filler	2026-04-12 06:00:08
+578	expense	Other Expenses	200.00	2026-04-14	agri_poultry_expense_91	Workmanship for the Pen division	2026-04-15 18:05:57
+579	expense	Other Expenses	320.00	2026-04-14	agri_poultry_expense_92	Workmanship for the Second shelves 220 and nails 100	2026-04-15 18:07:03
+583	expense	Medication	40.00	2026-04-16	agri_poultry_expense_93	MEDICATION FOR BATCH 3	2026-04-16 09:44:35
+585	expense	Equipment	122.00	2026-04-16	agri_poultry_expense_94	Metal Feeders for Batch3	2026-04-16 09:47:12
+600	expense	Other Expenses	100.00	2026-04-16	agri_poultry_expense_95	Polythine 10 yards for the Pen	2026-04-17 13:33:21
+601	expense	Medication	190.00	2026-04-16	agri_poultry_expense_96	Birds batch 4  multivatmin or Glucose	2026-04-17 13:34:34
+602	expense	Other Expenses	330.00	2026-04-17	agri_poultry_expense_97	10 more Drinkers for the new Batch 4 Births	2026-04-17 13:35:36
+621	income	Egg Sales	225.00	2026-04-19	agri_egg_sale_18	Egg sale: 5 crate @ 45 per unit - Buyer: HOPE SHOLA	2026-04-21 21:08:35
+630	expense	Other Expenses	250.00	2026-04-20	agri_poultry_expense_98	Weeding around the farm by the labourer	2026-04-21 22:33:52
+665	income	Egg Sales	225.00	2026-04-20	agri_egg_sale_20	Egg sale: 5 crate @ 45 per unit - Buyer: HOPE SHOLA	2026-04-24 10:19:53
+631	expense	Feed	100.00	2026-04-21	agri_poultry_expense_99	Shells for the Big Chickens	2026-04-21 22:35:04
+632	expense	Feed	1150.00	2026-04-21	agri_poultry_expense_100	Maize 180x3= 540\nK Broiler = 590\nMixing cost = 20	2026-04-21 22:38:09
+655	expense	Other Expenses	150.00	2026-04-23	agri_poultry_expense_101	Brush, Mob , broom and New padlock	2026-04-23 10:52:10
+661	expense	Other Expenses	31.00	2026-04-23	agri_poultry_expense_102	Fuel for Gideon to get Sawdust for the pen	2026-04-24 09:02:26
+664	income	Egg Sales	90.00	2026-04-24	agri_egg_sale_19	Egg sale: 2 crate @ 45 per unit - Buyer: Calyx	2026-04-24 10:18:05
+1186	expense	Feed	5345.00	2026-04-27	agri_poultry_expense_134	Poultry Feed Expenses (A)\n\t1.\tMaize (12 × 180) = 2,160\n\t2.\tShells (2 × 100) = 200\n\t3.\tWheat (2 × 190) = 380\n\t4.\tVitalic (1 × 580) = 580\n\t5.\tLocal Soya (2 × 370) = 740\n\t6.\tForeign Soya (2 × 390) 	2026-06-19 10:45:55
+1187	expense	Feed	655.00	2026-04-27	agri_poultry_expense_135	Operational Expenses (B)\n\t1.\tPetrol for motorbike = 20\n\t2.\tTransport (Store → Grinding Mill) = 50\n\t3.\tTransport (Grinding Area → Poultry) = 150\n\t4.\tMilling Cost = 70\n\nSubtotal (B) = 290\nGHC365 	2026-06-19 10:48:20
+703	expense	Labor	700.00	2026-04-29	agri_payroll_salary_4	Salary: Hope Shola Ade — Apr 2026	2026-04-29 11:29:18
+732	expense	Other Expenses	170.00	2026-04-30	agri_poultry_expense_104	Poutry Eggs crates	2026-04-30 22:10:31
+815	expense	Utilities	170.00	2026-04-30	6113540292	Poutry Eggs crates	2026-05-11 16:55:52
+1184	expense	Feed	5970.00	2026-05-01	agri_poultry_expense_132	Feed for 2 Batches, Half ton for 200 batch and 1200 batch each. \n\nGROWER FEED FORMULA (1/2 TON)\nBatch Size: 500kg\nTarget: 200 Birds (Aged 2–5 Months)\nINGREDIENTS:\n1.\tMaize: 260kg (Approx. 5 bags	2026-06-19 10:40:52
+1185	expense	Feed	705.00	2026-05-01	agri_poultry_expense_133	Other Costs Breakdown on the same day we did 1 POund of Feed for the 2 batches\n\t1.\tTransport = 150\n\t2.\tMilling = 100 (updated from 70 due to missing 30)\n\t3.\tGlucose = 15\n\t4.\tTransport = 50\n\t5.\tNa	2026-06-19 10:42:14
+744	income	Egg Sales	336.00	2026-05-02	agri_egg_sale_21	Egg sale: 8 crate @ 42 per unit - Buyer: Hope Shola - Part of the 22	2026-05-03 15:45:46
+745	income	Egg Sales	420.00	2026-05-02	agri_egg_sale_22	Egg sale: 12 crate @ 35 per unit - Buyer: Hope Shola - Part of the 22	2026-05-03 15:46:22
+746	income	Egg Sales	45.00	2026-05-02	agri_egg_sale_23	Egg sale: 1 crate @ 45 per unit - Buyer: Hope Shola - Part of the 22	2026-05-03 15:46:55
+747	income	Egg Sales	35.00	2026-05-02	agri_egg_sale_24	Egg sale: 1 crate @ 35 per unit - Part of the 22	2026-05-03 15:47:27
+769	income	Egg Sales	90.00	2026-05-05	agri_egg_sale_25	Egg sale: 2 crate @ 45 per unit - Buyer: Calyx	2026-05-07 10:11:47
+770	income	Egg Sales	525.00	2026-05-07	agri_egg_sale_26	Egg sale: 15 crate @ 35 per unit - Small 15	2026-05-07 10:12:30
+855	expense	Medication	150.00	2026-05-07	agri_poultry_expense_108	Week 1 gumoro Vacines	2026-05-14 20:14:42
+863	expense	Feed	580.00	2026-05-07	agri_poultry_expense_111	Owanwa Pre-Startee two bags :Ghc560\nTip for Hope : Ghc20	2026-05-15 08:36:15
+919	expense	Feed	580.00	2026-05-07	2401197970	Owanwa Pre-Startee two bags :Ghc560\nTip for Hope : Ghc20	2026-05-26 15:30:31
+923	expense	Medication	150.00	2026-05-07	9053517177	Week 1 gumoro Vacines	2026-05-26 15:30:48
+862	expense	Feed	400.00	2026-05-08	agri_poultry_expense_110	Water for the Farm	2026-05-15 08:34:17
+922	expense	Feed	400.00	2026-05-08	2010573561	Water for the Farm	2026-05-26 15:30:42
+792	income	Egg Sales	35.00	2026-05-10	agri_egg_sale_27	Egg sale: 1 crate @ 35 per unit - Buyer: Gideon Black	2026-05-10 09:54:48
+812	expense	Equipment	450.00	2026-05-11	agri_poultry_expense_105	Solar Light	2026-05-11 16:53:24
+814	expense	Equipment	450.00	2026-05-11	4588215055	Solar Light	2026-05-11 16:55:43
+856	income	Egg Sales	86.00	2026-05-11	agri_egg_sale_28	Egg sale: 2 crate @ 43 per unit - Buyer: Calyx	2026-05-14 22:01:47
+851	expense	Equipment	330.00	2026-05-14	agri_poultry_expense_106	Solar Light: 300\nDelivery from Drobo: 30	2026-05-14 16:25:28
+854	expense	Medication	100.00	2026-05-14	agri_poultry_expense_107	Lasota	2026-05-14 20:10:56
+857	income	Egg Sales	805.00	2026-05-14	agri_egg_sale_29	Egg sale: 23 crate @ 35 per unit - Buyer: Hope Shola	2026-05-14 22:02:50
+858	income	Egg Sales	490.00	2026-05-14	agri_egg_sale_30	Egg sale: 14 crate @ 35 per unit - Buyer: Gideon Black	2026-05-14 22:03:22
+920	expense	Equipment	330.00	2026-05-14	5521820216	Solar Light: 300\nDelivery from Drobo: 30	2026-05-26 15:30:35
+921	expense	Medication	100.00	2026-05-14	8601078063	Lasota	2026-05-26 15:30:37
+861	expense	Equipment	40.00	2026-05-15	agri_poultry_expense_109	Fuel for Saw Dust	2026-05-15 08:32:12
+916	expense	Equipment	40.00	2026-05-15	1518326080	Fuel for Saw Dust	2026-05-26 15:30:07
+898	expense	Medication	130.00	2026-05-21	agri_poultry_expense_112	2nd Gumoro Vaccine	2026-05-21 09:00:53
+917	expense	Medication	130.00	2026-05-21	7203711717	2nd Gumoro Vaccine	2026-05-26 15:30:10
+911	expense	Equipment	91.00	2026-05-26	agri_poultry_expense_113	Bicycle Maintenance and Sawdust by Hope	2026-05-26 14:59:03
+918	expense	Equipment	91.00	2026-05-26	6618714766	Bicycle Maintenance and Sawdust by Hope	2026-05-26 15:30:13
+933	expense	Medication	100.00	2026-05-28	agri_poultry_expense_114	Week 4 Vaccine	2026-05-28 09:11:29
+934	expense	Other Expenses	100.00	2026-05-28	agri_poultry_expense_115	Fuel 50 for Saw Dust and 50 for Eggs Distribution and payment collection	2026-05-28 09:12:12
+1008	expense	Medication	100.00	2026-05-28	5939994686	Week 4 Vaccine	2026-06-02 11:12:02
+1009	expense	Utilities	100.00	2026-05-28	1365667682	Fuel 50 for Saw Dust and 50 for Eggs Distribution and payment collection	2026-06-02 11:12:10
+954	expense	Other Expenses	600.00	2026-05-29	agri_poultry_expense_116	Amount is ghc1200 and we divided it among ourself so we pay ghc600	2026-05-29 16:55:28
+1007	expense	Labourers	600.00	2026-05-29	2763733304	Amount is ghc1200 and we divided it among ourself so we pay ghc600	2026-06-02 11:11:55
+962	expense	Feed	400.00	2026-05-30	agri_poultry_expense_117	Drinking Water for the Poutry	2026-05-30 07:53:50
+1006	expense	Feed	400.00	2026-05-30	3257338905	Drinking Water for the Poutry	2026-06-02 11:11:47
+999	income	Egg Sales	420.00	2026-05-31	agri_egg_client_sale_1	Egg client sale: 15 small - Buyer: Priscilla	2026-06-02 11:10:03
+1000	income	Egg Sales	3265.00	2026-05-31	agri_egg_client_sale_2	Egg client sale: 69 small, 10 medium, 10 large - Buyer: Collins' friend	2026-06-02 11:10:03
+1001	income	Egg Sales	245.00	2026-05-31	agri_egg_client_sale_3	Egg client sale: 7 small - Buyer: Nursing woman	2026-06-02 11:10:03
+1002	income	Egg Sales	703.00	2026-05-31	agri_egg_client_sale_4	Egg client sale: 15 small, 7 medium - Buyer: Hope	2026-06-02 11:10:03
+1003	income	Egg Sales	257.00	2026-05-31	agri_egg_client_sale_5	Egg client sale: 8 small - Buyer: Ante Adus	2026-06-02 11:10:03
+1004	income	Egg Sales	35.00	2026-05-31	agri_egg_client_sale_6	Egg client sale: 1 small - Buyer: Mina	2026-06-02 11:10:03
+1005	income	Egg Sales	70.00	2026-05-31	agri_egg_client_sale_7	Egg client sale: 6 small - Buyer: Yeboah	2026-06-02 11:10:04
+981	expense	Labor	700.00	2026-06-01	agri_payroll_salary_5	Salary: Hope Shola Ade — Apr 2026	2026-06-01 15:12:18
+1011	expense	Pesticides	90.00	2026-06-02	agri_poultry_expense_119	Spraying and Weeding of the Poutry farm	2026-06-02 11:49:06
+1038	expense	Feed	4730.00	2026-06-02	agri_poultry_expense_120	Feed: GHC 4,370\nTransportation: GHC 190\nFuel: GHC 50\nCompensation to Hope: GHC 50\nFeed Milling: Ghc70	2026-06-03 18:47:23
+1039	expense	Other Expenses	550.00	2026-06-03	agri_poultry_expense_121	Weeding of the 2 Plot for Farming	2026-06-03 18:48:33
+1095	expense	Other Expenses	160.00	2026-06-09	agri_poultry_expense_122	2 Crates for putting eggs into	2026-06-09 13:41:06
+1116	expense	Other Expenses	475.00	2026-06-11	agri_poultry_expense_123	For Spraying of the farm and planting of Maize\n75 for Hope and 400 for the 2 Laboarers who assisted hum for 2 days	2026-06-11 21:25:00
+1117	expense	Medication	100.00	2026-06-11	agri_poultry_expense_124	6th Week Booster	2026-06-11 21:25:57
+1118	expense	Pesticides	175.00	2026-06-11	agri_poultry_expense_125	3 Bottles of Weedicde and 1 Small bag of Maize as top up Ghc25	2026-06-11 21:27:22
+1119	expense	Other Expenses	50.00	2026-06-11	agri_poultry_expense_126	Weedicide for Spraying the Poutry \nThe ealier one we bought was Pesticides	2026-06-11 21:28:14
+1183	expense	Other Expenses	30.00	2026-06-11	agri_poultry_expense_131	Fuel when going to the farms	2026-06-19 10:09:44
+1132	expense	Feed	4720.00	2026-06-12	agri_poultry_expense_128	One Ton 6th week \nKBC 4*610 =2,440 \nMaize 12*170=2,040 \nTransport = 170\nMilling = 70 \n\nTotal 2440+2040+170+70=4,720	2026-06-13 16:55:04
+1131	expense	Medication	180.00	2026-06-13	agri_poultry_expense_127	Multivitamin for the Birds	2026-06-13 16:53:53
+1181	expense	Other Expenses	1257.00	2026-06-18	agri_poultry_expense_129	A) MATERIAL COST REPORT\n\t1.\tWawa Wood — 4 × 95 = GH₵380\n\t2.\tCyber Wood — 4 × 70 = GH₵280\n\t3.\tPlywood (2½ Sheets) = GH₵237\n\t4.\tNormal 2×4 Wood — 6 × 35 = GH₵210\n\t5.\tTransport = GH₵150\n\nTotal Mat	2026-06-19 10:07:15
+1182	expense	Other Expenses	277.50	2026-06-19	agri_poultry_expense_130	B) FARM EXPENSE REPORT\n\t1.\tWeedicide — 4 × 40 = GH₵160\n\t2.\tWeedicide — 2 × 40 = GH₵80\n\t3.\tFood & Transportation (Day 1) = GH₵50\n\t4.\tFood & Transportation (Day 2) = GH₵50\n\t5.\tWorkmanship for Two L	2026-06-19 10:08:18
+1325	expense	Feed	400.00	2026-06-19	agri_poultry_expense_144	Water for the Birds, water tanker	2026-07-07 18:23:47
+1206	expense	Other Expenses	160.00	2026-06-24	agri_poultry_expense_136	crates 2 large	2026-06-24 21:44:58
+1232	expense	Medication	250.00	2026-06-29	agri_poultry_expense_137	Penicillin giving to the birds after debeaking	2026-06-29 14:54:46
+1233	expense	Medication	50.00	2026-06-29	agri_poultry_expense_138	Charge by the Vert for De-beaking 200 birds	2026-06-29 14:55:20
+1247	expense	Labor	850.00	2026-07-02	agri_payroll_salary_6	Salary: Hope Shola Ade — Jun 2026	2026-07-02 12:59:15
+1248	expense	Labor	700.00	2026-07-02	agri_payroll_salary_7	Salary: Hope Shola Ade — May 2026	2026-07-02 12:59:45
+1250	expense	Other Expenses	430.00	2026-07-02	agri_poultry_expense_141	Workmanship for Carpenters for the construction of Layer Coop	2026-07-02 20:47:55
+1271	expense	Other Expenses	100.00	2026-07-04	agri_poultry_expense_142	Bicyle Repairs for the farm	2026-07-06 02:28:12
+1324	expense	Feed	400.00	2026-07-07	agri_poultry_expense_143	Water tank Car , water refilling	2026-07-07 18:22:19
+1772	expense	Other Expenses	310.00	2026-07-11	agri_poultry_expense_146	Coccit	2026-07-13 09:00:42
+1765	expense	Other Expenses	540.00	2026-07-12	agri_poultry_expense_145	6 Big Drinkers for the birds	2026-07-12 10:45:36
+1809	income	Egg Sales	1350.00	2026-07-12	agri_egg_client_sale_8	Egg client sale: 36 small - Buyer: Collins woman - Last week’s money	2026-07-19 22:22:25
+1773	expense	Other Expenses	200.00	2026-07-13	agri_poultry_expense_147	Knapsack Sprayer	2026-07-13 12:21:35
+1774	expense	Other Expenses	50.00	2026-07-13	agri_poultry_expense_148	Nails for roofing	2026-07-13 12:21:58
+1800	expense	Equipment	460.00	2026-07-15	agri_poultry_expense_149	Roofing Leakage Workmanship:300\nMaterials: Ghc60\nRain Coat	2026-07-17 09:07:03
+1802	expense	Feed	5090.00	2026-07-16	agri_poultry_expense_151	Feed for 3 weeks after 2nd week the 3rd batch will start eating some	2026-07-17 09:24:02
+1803	expense	Feed	390.00	2026-07-16	agri_poultry_expense_152	Transportation of 2 Tons of feed	2026-07-17 09:25:35
+1801	expense	Feed	5020.00	2026-07-17	agri_poultry_expense_150	Feed for 3rd Batch till the end of the month	2026-07-17 09:18:47
+1810	income	Egg Sales	1650.00	2026-07-19	agri_egg_client_sale_9	Egg client sale: 11 small, 30 large - Buyer: Collins Friend	2026-07-19 22:24:01
+1829	expense	Medication	518.00	2026-07-21	agri_poultry_expense_153	Medication : 180\nVert Dr. Injection : 330\nWe gave the boys who helped 2 creates of eggs	2026-07-21 18:20:58
+1830	expense	Feed	400.00	2026-07-21	agri_poultry_expense_154	Water	2026-07-21 18:21:46
+1854	expense	Seeds	160.00	2026-07-25	agri_poultry_expense_155	Transportation of Cassava	2026-07-26 11:38:54
+1873	expense	Seeds	500.00	2026-07-26	agri_poultry_expense_158	CASSAVA, 1 MOTO KING	2026-07-28 13:14:06
+1869	expense	Feed	90.00	2026-07-27	agri_poultry_expense_156	1 Bag of Shells because the birds were eating the eggs	2026-07-28 12:39:08
+1872	expense	Pesticides	210.00	2026-07-27	agri_poultry_expense_157	3 BOTTLES OF WEEDICIDE BEFORE THE PLANTING OF THE CASSAVA	2026-07-28 13:13:12
+1890	expense	Feed	5280.00	2026-07-29	agri_poultry_expense_159	(C) Layer Feed Cost \nExpenses\n1. Maize and Other Costs = GH₵4,820\n2. Milling Cost = GH₵70\n3. Transport = GH₵350\n4. Petrol = GH₵40\nTotal Expenses = GH₵5,280	2026-07-30 23:24:29
