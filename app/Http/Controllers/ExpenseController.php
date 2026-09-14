@@ -22,7 +22,7 @@ class ExpenseController extends Controller
             $sort = 'date';
         }
 
-        $query = PoultryExpense::query()->with(['farm', 'birdBatch', 'expenseCategory']);
+        $query = PoultryExpense::query()->with(['farm', 'birdBatch', 'birdBatches', 'expenseCategory']);
 
         switch ($sort) {
             case 'date':
@@ -89,7 +89,8 @@ class ExpenseController extends Controller
     {
         $data = $request->validate([
             'farm_id' => 'required|exists:farms,id',
-            'bird_batch_id' => 'nullable|exists:bird_batches,id',
+            'bird_batch_ids' => 'nullable|array',
+            'bird_batch_ids.*' => 'integer|exists:bird_batches,id',
             'category_id' => 'required|exists:expense_categories,id',
             'default_date' => 'required|date',
             'pasted_data' => 'required|string|max:50000',
@@ -110,7 +111,7 @@ class ExpenseController extends Controller
         }
 
         $farmId = (int) $data['farm_id'];
-        $batchId = $data['bird_batch_id'] ? (int) $data['bird_batch_id'] : null;
+        $batchIds = $this->normalizeBatchIds($data['bird_batch_ids'] ?? []);
         $created = 0;
         $errors = [];
 
@@ -118,12 +119,13 @@ class ExpenseController extends Controller
             try {
                 $expense = PoultryExpense::create([
                     'farm_id' => $farmId,
-                    'bird_batch_id' => $batchId,
+                    'bird_batch_id' => $batchIds[0] ?? null,
                     'category_id' => $row['category_id'],
                     'date' => $row['date'],
                     'amount' => $row['amount'],
                     'description' => $row['description'],
                 ]);
+                $expense->birdBatches()->sync($batchIds);
 
                 try {
                     (new PriorityBankIntegrationService())->pushPoultryExpense($expense);
@@ -331,14 +333,20 @@ class ExpenseController extends Controller
     {
         $data = $request->validate([
             'farm_id' => 'required|exists:farms,id',
-            'bird_batch_id' => 'nullable|exists:bird_batches,id',
+            'bird_batch_ids' => 'nullable|array',
+            'bird_batch_ids.*' => 'integer|exists:bird_batches,id',
             'category_id' => 'required|exists:expense_categories,id',
             'amount' => 'required|numeric|min:0',
             'date' => 'required|date',
             'description' => 'nullable|string',
         ]);
 
+        $batchIds = $this->normalizeBatchIds($data['bird_batch_ids'] ?? []);
+        unset($data['bird_batch_ids']);
+        $data['bird_batch_id'] = $batchIds[0] ?? null;
+
         $expense = PoultryExpense::create($data);
+        $expense->birdBatches()->sync($batchIds);
 
         // Push to Priority Bank
         try {
@@ -358,7 +366,7 @@ class ExpenseController extends Controller
 
     public function show(PoultryExpense $expense)
     {
-        $expense->load(['farm', 'birdBatch', 'expenseCategory']);
+        $expense->load(['farm', 'birdBatch', 'birdBatches', 'expenseCategory']);
         return view('expenses.show', compact('expense'));
     }
 
@@ -367,7 +375,7 @@ class ExpenseController extends Controller
         $farms = Farm::all();
         $batches = BirdBatch::with('farm')->get();
         $categories = ExpenseCategory::where('is_active', true)->get();
-        $expense->load(['farm', 'birdBatch', 'expenseCategory']);
+        $expense->load(['farm', 'birdBatch', 'birdBatches', 'expenseCategory']);
         return view('expenses.edit', compact('expense', 'farms', 'batches', 'categories'));
     }
 
@@ -375,18 +383,43 @@ class ExpenseController extends Controller
     {
         $data = $request->validate([
             'farm_id' => 'required|exists:farms,id',
-            'bird_batch_id' => 'nullable|exists:bird_batches,id',
+            'bird_batch_ids' => 'nullable|array',
+            'bird_batch_ids.*' => 'integer|exists:bird_batches,id',
             'category_id' => 'required|exists:expense_categories,id',
             'amount' => 'required|numeric|min:0',
             'date' => 'required|date',
             'description' => 'nullable|string',
         ]);
 
+        $batchIds = $this->normalizeBatchIds($data['bird_batch_ids'] ?? []);
+        unset($data['bird_batch_ids']);
+        $data['bird_batch_id'] = $batchIds[0] ?? null;
+
         $expense->update($data);
+        $expense->birdBatches()->sync($batchIds);
 
         app(CrudNotificationService::class)->notify('expenses', 'updated', $expense, auth()->user());
 
         return redirect()->route('expenses.index')->with('success', 'Expense updated successfully.');
+    }
+
+    /**
+     * Normalize selected batch IDs (unique integers, preserve order).
+     *
+     * @param  array<int|string>  $batchIds
+     * @return list<int>
+     */
+    protected function normalizeBatchIds(array $batchIds): array
+    {
+        $normalized = [];
+        foreach ($batchIds as $id) {
+            $id = (int) $id;
+            if ($id > 0 && ! in_array($id, $normalized, true)) {
+                $normalized[] = $id;
+            }
+        }
+
+        return $normalized;
     }
 
     public function destroy(PoultryExpense $expense)

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class PoultryExpense extends Model
 {
@@ -31,6 +32,15 @@ class PoultryExpense extends Model
         return $this->belongsTo(BirdBatch::class);
     }
 
+    /**
+     * Batches this expense applies to (supports shared feed across multiple batches).
+     */
+    public function birdBatches(): BelongsToMany
+    {
+        return $this->belongsToMany(BirdBatch::class, 'poultry_expense_bird_batch')
+            ->withTimestamps();
+    }
+
     public function farm(): BelongsTo
     {
         return $this->belongsTo(Farm::class);
@@ -45,5 +55,17 @@ class PoultryExpense extends Model
     public function expenseCategory(): BelongsTo
     {
         return $this->belongsTo(ExpenseCategory::class, 'category_id');
+    }
+
+    /**
+     * Human-readable batch label(s) for lists and detail views.
+     */
+    public function batchDisplayLabel(string $empty = 'General'): string
+    {
+        if ($this->relationLoaded('birdBatches') && $this->birdBatches->isNotEmpty()) {
+            return $this->birdBatches->pluck('batch_code')->filter()->implode(', ');
+        }
+
+        return $this->birdBatch?->batch_code ?? $empty;
     }
 }

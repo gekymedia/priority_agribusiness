@@ -132,7 +132,7 @@
                     <tr style="background-color: {{ $rowBg }};">
                         <td>{{ $expense->date->format('M d, Y') }}</td>
                         <td>{{ $expense->farm->name ?? 'N/A' }}</td>
-                        <td>{{ $expense->birdBatch->batch_code ?? 'General' }}</td>
+                        <td>{{ $expense->batchDisplayLabel() }}</td>
                         <td>
                             <span class="badge bg-primary bg-opacity-10 text-primary">
                                 {{ $expense->expenseCategory?->name ?? ($expense->getRawOriginal('category') ?: 'Uncategorized') }}

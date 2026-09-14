@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BirdBatch extends Model
@@ -98,11 +99,12 @@ class BirdBatch extends Model
     }
 
     /**
-     * Expenses associated with this batch.
+     * Expenses associated with this batch (including shared multi-batch expenses).
      */
-    public function expenses(): HasMany
+    public function expenses(): BelongsToMany
     {
-        return $this->hasMany(PoultryExpense::class);
+        return $this->belongsToMany(PoultryExpense::class, 'poultry_expense_bird_batch')
+            ->withTimestamps();
     }
 
     /**

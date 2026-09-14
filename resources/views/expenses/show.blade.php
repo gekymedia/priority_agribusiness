@@ -26,7 +26,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="text-muted">Bird Batch</label>
-                        <p class="h5">{{ $expense->birdBatch->batch_code ?? 'General Expense' }}</p>
+                        <p class="h5">{{ $expense->batchDisplayLabel('General Expense') }}</p>
                     </div>
                     <div class="col-md-6">
                         <label class="text-muted">Category</label>

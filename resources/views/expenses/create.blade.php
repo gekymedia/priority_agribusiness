@@ -32,20 +32,23 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label for="bird_batch_id" class="form-label">
+                    <label for="bird_batch_ids" class="form-label">
                         <i class="fas fa-dove me-2"></i>Bird Batch (Optional)
                     </label>
-                    <select name="bird_batch_id" id="bird_batch_id" class="form-select @error('bird_batch_id') is-invalid @enderror">
-                        <option value="">General Expense</option>
+                    <select name="bird_batch_ids[]" id="bird_batch_ids" class="form-select @error('bird_batch_ids') is-invalid @enderror @error('bird_batch_ids.*') is-invalid @enderror" multiple size="5">
                         @foreach($batches as $batch)
-                            <option value="{{ $batch->id }}" {{ old('bird_batch_id') == $batch->id ? 'selected' : '' }}>
+                            <option value="{{ $batch->id }}" {{ collect(old('bird_batch_ids', []))->map(fn ($id) => (int) $id)->contains($batch->id) ? 'selected' : '' }}>
                                 {{ $batch->batch_code }} - {{ $batch->farm->name }}
                             </option>
                         @endforeach
                     </select>
-                    @error('bird_batch_id')
+                    @error('bird_batch_ids')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
+                    @error('bird_batch_ids.*')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                    <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple batches when feed is shared.</small>
                 </div>
 
                 <div class="col-md-6">
