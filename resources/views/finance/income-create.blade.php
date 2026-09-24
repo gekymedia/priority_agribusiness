@@ -35,8 +35,9 @@
                 </div>
                 <div class="col-12">
                     <label for="description" class="form-label"><i class="fas fa-align-left me-2"></i>Description</label>
-                    <textarea name="description" id="description" class="form-control @error('description') is-invalid @enderror" rows="2">{{ old('description') }}</textarea>
+                    <textarea name="description" id="description" class="form-control @error('description') is-invalid @enderror" rows="4" maxlength="1000">{{ old('description') }}</textarea>
                     @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <div class="form-text">Up to 1,000 characters.</div>
                 </div>
                 <div class="col-md-6">
                     <label for="external_transaction_id" class="form-label"><i class="fas fa-link me-2"></i>External Transaction ID</label>

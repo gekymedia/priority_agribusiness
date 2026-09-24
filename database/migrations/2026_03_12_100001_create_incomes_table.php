@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('category');
             $table->decimal('amount', 14, 2);
             $table->date('received_on');
-            $table->string('description')->nullable();
+            $table->text('description')->nullable();
             $table->string('reference')->nullable();
             $table->string('external_transaction_id', 64)->nullable()->index();
             $table->timestamps();
